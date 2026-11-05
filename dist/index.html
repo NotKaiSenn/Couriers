@@ -3,191 +3,135 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#302D41">
-  <meta name="description" content="寄语 Couriers 是一支 Minecraft 地图创作团队。每一张地图，都是一封寄给你的信。新作《沉默乐章：错位音》现已公开。">
+  <meta name="theme-color" content="#252858">
+  <meta name="description" content="寄语 Couriers，一支做 Minecraft 地图的小团队。跟着邮差走一趟送信路线，看看新作《沉默乐章：错位音》。">
   <!-- 本地开发阶段保持 noindex；正式上线前再移除。 -->
   <meta name="robots" content="noindex, nofollow">
-  <title>寄语 Couriers · Minecraft 地图创作团队</title>
+  <title>寄语 Couriers · 送信路线</title>
   <link rel="icon" href="./assets/img/envelope.svg" type="image/svg+xml">
   <link rel="preload" href="./assets/fonts/FusionPixel/fusion-pixel-12px-sc.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="./styles.css">
+  <noscript><style>.world{height:auto!important}.stage{position:static;height:auto;padding:120px 20px 80px}.layer,.courier{display:none}.overlay{display:block!important;position:static;width:auto!important;transform:none!important}.overlay>*{position:static!important;margin:0 auto 32px!important;transform:none!important}</style></noscript>
   <script src="./app.js" defer></script>
 </head>
 <body>
-  <a class="skip-link" href="#intro">跳到正文</a>
+  <a class="skip-link" href="#po">跳到正文</a>
 
   <header class="site-header">
-    <a class="brand" href="#home" aria-label="寄语 Couriers 首页"><img src="./assets/img/couriers-bilingual-horizontal.svg" alt="寄语 Couriers" width="258" height="50"></a>
+    <a class="brand" href="#po" data-stop="po" aria-label="寄语 Couriers · 回到邮局"><img src="./assets/img/couriers-bilingual-horizontal.svg" alt="寄语 Couriers" width="258" height="50"></a>
     <button class="menu-toggle" aria-expanded="false" aria-controls="main-nav" aria-label="打开导航"><span></span><span></span><span></span></button>
-    <nav id="main-nav" aria-label="主导航">
-      <a href="#works">作品</a>
-      <a href="#archive">档案</a>
-      <a href="#about">关于</a>
-      <a href="#team">成员</a>
-      <a href="#join">招募</a>
+    <nav id="main-nav" aria-label="路线">
+      <a href="#po" data-stop="po">邮局</a>
+      <a href="#theater" data-stop="theater">音乐厅</a>
+      <a href="#camp" data-stop="camp">营火</a>
+      <a href="#board" data-stop="board">招募</a>
     </nav>
     <div class="join-wrap">
       <a class="join-link" href="https://qm.qq.com/q/B6GiehmH62" target="_blank" rel="noopener noreferrer"><span>加入我们</span><svg class="join-arrow" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M4 12 12 4M4 4h8v8" stroke="currentColor" stroke-width="2" stroke-linecap="square"/></svg></a>
     </div>
   </header>
 
-  <main>
-    <!-- 01 · 主视觉：当前作品的海报 -->
-    <section class="hero" id="home" aria-label="新作《沉默乐章：错位音》">
-      <div class="hero-stage">
-        <img class="hero-background" src="./assets/img/cmyz-hero-background-v2.png" alt="" width="1920" height="1080" fetchpriority="high" aria-hidden="true">
-        <div class="hero-scene" aria-hidden="true">
-          <img class="hero-logo" src="./assets/img/cmyz-page-v2.png" alt="" width="1536" height="576" fetchpriority="high">
+  <main class="world" id="world">
+    <h1 class="sr-only">寄语 Couriers · Minecraft 地图团队</h1>
+    <div class="stage" id="stage">
+      <canvas class="layer" id="l-stars" data-f=".04" aria-hidden="true"></canvas>
+      <canvas class="sky-body" id="moon" aria-hidden="true"></canvas>
+      <canvas class="sky-body" id="sun" aria-hidden="true"></canvas>
+      <canvas class="layer dim" id="l-far" data-f=".16" aria-hidden="true"></canvas>
+      <canvas class="layer dim" id="l-mid" data-f=".45" aria-hidden="true"></canvas>
+      <canvas class="layer dim" id="l-main" data-f="1" aria-hidden="true"></canvas>
+      <canvas class="layer" id="l-lights" data-f="1" aria-hidden="true"></canvas>
+
+      <div class="layer overlay" id="overlay" data-f="1">
+
+        <!-- 起点：邮局 -->
+        <section class="sky-card intro" id="po" style="--x:10" aria-label="寄语邮局">
+          <h2>今晚，<br>有一封信要送。</h2>
+          <p>我们是寄语 Couriers，一支做 Minecraft 地图的小团队。<br>跟着邮差往前走，看看这次寄出的是什么。</p>
+          <p class="hint" aria-hidden="true">往下滚动，出发 <i></i></p>
+        </section>
+        <span class="po-sign at" style="--x:61;--y:31" aria-hidden="true"><img src="./assets/img/envelope.svg" alt="" width="24" height="20">寄语邮局</span>
+        <span class="smoke at" style="--x:96;--y:70" aria-hidden="true"><i></i><i></i><i></i></span>
+
+        <div class="board billboard at" style="--x:146;--y:34">
+          <button class="dlc-sticker" data-stop="theater" aria-label="企划新作《沉默乐章：错位音》现已公开，走到音乐厅看看">
+            <span class="sticker-paper" aria-hidden="true"></span>
+            <span class="sticker-tab">企划新作！</span>
+            <span class="sticker-title">《沉默乐章：错位音》</span>
+            <strong class="sticker-announcement">现已公开！</strong>
+            <span class="sticker-rays" aria-hidden="true"><i></i><i></i><i></i></span>
+            <img class="sticker-record" src="./assets/img/minecraft/music-disc-blocks.png" alt="" width="96" height="96" aria-hidden="true">
+          </button>
         </div>
-        <h1 class="sr-only">寄语 Couriers · 《沉默乐章：错位音》</h1>
-        <a class="dlc-sticker" href="https://space.bilibili.com/146080411" target="_blank" rel="noopener noreferrer" aria-label="企划新作：《沉默乐章：错位音》现已公开，前往 Bilibili 查看">
-          <span class="sticker-paper" aria-hidden="true"></span>
-          <span class="sticker-tab">企划新作！</span>
-          <span class="sticker-title">《沉默乐章：错位音》</span>
-          <strong class="sticker-announcement">现已公开！</strong>
-          <span class="sticker-rays" aria-hidden="true"><i></i><i></i><i></i></span>
-          <img class="sticker-record" src="./assets/img/minecraft/music-disc-blocks.png" alt="" width="96" height="96" aria-hidden="true">
-        </a>
-        <a class="scroll-cue" href="#intro" aria-label="向下滚动"><span>拆开这封信</span><i aria-hidden="true"></i></a>
+
+        <div class="signpost at" style="--x:291;--y:0" aria-hidden="true">
+          <span style="--row:0">音乐厅</span><span style="--row:1">工地</span><span style="--row:2">营火</span>
+        </div>
+
+        <!-- 音乐厅：《沉默乐章：错位音》 -->
+        <span class="beam at" style="--x:404;--y:100" aria-hidden="true"></span>
+        <span class="beam is-right at" style="--x:516;--y:100" aria-hidden="true"></span>
+        <div class="t-window at" style="--x:418;--y:40" aria-hidden="true">
+          <img src="./assets/img/cmyz-hero-background-v2.png" alt="" width="1920" height="1080" loading="lazy">
+          <i class="curtain is-left"></i><i class="curtain is-right"></i>
+        </div>
+        <span class="t-bulbs at" style="--x:427;--y:33" aria-hidden="true"></span>
+        <span class="t-clock at" style="--x:460;--y:107" aria-hidden="true"><i class="hand-h"></i><i class="hand-m"></i></span>
+        <img class="t-title at" style="--x:420;--y:114" src="./assets/img/cmyz-page-v2.png" alt="" width="1536" height="576" aria-hidden="true">
+        <button class="noteblock at" id="noteblock" style="--x:384;--y:0" aria-label="音符盒：敲一下"><span aria-hidden="true">♪</span></button>
+
+        <article class="playbill at" id="theater" style="--x:530;--y:0" aria-labelledby="pb-title">
+          <p class="pb-tag">今晚上演</p>
+          <h2 id="pb-title">沉默乐章<small>错位音</small></h2>
+          <!-- 文案草稿：只描述了主视觉里能看到的东西，剧情确认后再改。 -->
+          <p class="pb-text">一座停摆的钟，<br>一段走了调的旋律。</p>
+          <p class="pb-meta">开演时间 · 待公布</p>
+          <button class="ticket" id="enter-theater">进场看看 ▶</button>
+          <a class="ticket is-plain" href="https://www.bilibili.com/video/BV1M8NQ6GE8M" target="_blank" rel="noopener noreferrer">预告片 ↗</a>
+        </article>
+
+        <!-- 工地：下一部作品 -->
+        <span class="crane-hook at" style="--x:764;--y:46" aria-hidden="true"><i></i></span>
+        <div class="board site-sign at" style="--x:700;--y:10">
+          <p class="board-title">下一站 · 施工中</p>
+          <p>新地图正在一格一格地搭。</p>
+        </div>
+
+        <!-- 营火：成员 -->
+        <div class="board camp-sign at" id="camp" style="--x:896;--y:46">
+          <p class="board-title">邮差们在这儿歇脚</p>
+          <p id="camp-note">名单整理中，先认个脸。</p>
+        </div>
+        <div id="crew"></div>
+        <span class="fire at" style="--x:951;--y:0" aria-hidden="true"></span>
+
+        <!-- 告示牌：招募 -->
+        <article class="board notice at" id="board" style="--x:1040;--y:8" aria-labelledby="notice-title">
+          <p class="board-title" id="notice-title">招募邮差</p>
+          <ul class="slips" id="slips"></ul>
+          <p>会哪一样都行，先来打个招呼。</p>
+          <a class="ticket" href="https://qm.qq.com/q/B6GiehmH62" target="_blank" rel="noopener noreferrer">QQ 群报名 ↗</a>
+        </article>
+
+        <!-- 终点：邮筒 -->
+        <section class="sky-card endcard" id="end" aria-label="终点">
+          <h2>信送到了。</h2>
+          <p>谢谢你走完这一程。<br>下一封信，我们在 Bilibili 见。</p>
+          <p class="end-links">
+            <a class="ticket" href="https://space.bilibili.com/146080411" target="_blank" rel="noopener noreferrer">Bilibili ↗</a>
+            <a class="ticket is-plain" href="https://qm.qq.com/q/B6GiehmH62" target="_blank" rel="noopener noreferrer">QQ 群 ↗</a>
+          </p>
+        </section>
+        <footer class="ground-note" id="ground-note">
+          <p>© 2026 寄语 Couriers　·　非官方 Minecraft 产品。未经 Mojang 或 Microsoft 批准，也不与 Mojang 或 Microsoft 关联。</p>
+        </footer>
       </div>
-    </section>
 
-    <!-- 02 · 寄语：团队一句话 -->
-    <section class="manifesto edge" id="intro" style="--bg:var(--paper)">
-      <div class="wrap manifesto-grid">
-        <div class="manifesto-head" data-reveal>
-          <p class="eyebrow"><b>01</b><span>寄语</span><i>COURIERS</i></p>
-          <h2 class="display">每一张地图，<br>都是一封<br>寄给你的信。</h2>
-        </div>
-        <div class="manifesto-body" data-reveal>
-          <p class="lead">寄语 Couriers 是一支 Minecraft 地图创作团队。我们用方块搭建场景，用指令编写机制，用文字和声音讲故事——再把它们仔细封好，投递给屏幕前的你。</p>
-          <ul class="crafts" id="crafts"></ul>
-        </div>
-      </div>
-    </section>
-
-    <!-- 03 · 本期来信：主推作品 -->
-    <section class="featured edge" id="works" style="--bg:var(--work-bg)">
-      <div class="wrap">
-        <p class="eyebrow on-dark" data-reveal><b>02</b><span>本期来信</span><i>NOW DELIVERING</i></p>
-        <div class="featured-grid">
-          <figure class="postcard" data-reveal>
-            <div class="postcard-art"><img src="./assets/img/cmyz-hero-background-v2.png" alt="《沉默乐章：错位音》主视觉：落地钟旁围坐着几位角色，唱片与音符散落在红色座椅间" width="1920" height="1080" loading="lazy"></div>
-            <span class="postcard-stamp perf" aria-hidden="true"><img src="./assets/img/minecraft/music-disc-blocks.png" alt="" width="16" height="16"></span>
-            <span class="postmark-slot" data-postmark="派送中" data-postmark-color="#B4443A" aria-hidden="true"></span>
-            <figcaption>COURIERS · 2026 · 主视觉</figcaption>
-          </figure>
-          <div class="featured-copy" data-reveal>
-            <h2 class="work-title"><span class="work-title-main">沉默乐章</span><span class="work-title-sub">错位音</span></h2>
-            <!-- 文案草稿：只描述了主视觉中可见的元素，剧情确认后再替换。 -->
-            <p class="work-lead">寄语 Couriers 全新企划。一座停摆的落地钟、散落一地的唱片，和一段走了调的旋律——更多内容，即将揭晓。</p>
-            <div class="actions">
-              <a class="pbtn pbtn-gold" href="https://www.bilibili.com/video/BV1M8NQ6GE8M" target="_blank" rel="noopener noreferrer"><span aria-hidden="true">▶</span>观看预告片</a>
-              <a class="pbtn pbtn-ghost" href="https://space.bilibili.com/146080411" target="_blank" rel="noopener noreferrer">关注动态<span aria-hidden="true">↗</span></a>
-            </div>
-            <dl class="waybill" id="waybill"></dl>
-          </div>
-        </div>
-
-        <div class="tracking" data-reveal>
-          <p class="tracking-head"><span>投递进度</span><span class="tracking-no">运单号 CR-2026-0001</span></p>
-          <ol class="tracking-steps" id="tracking-steps"></ol>
-        </div>
-
-        <div class="noteblocks" data-reveal>
-          <div class="noteblocks-head">
-            <p><span class="pixel">敲一敲</span>八个音符盒。打开「错位」，每个音都会偏离它的位置。</p>
-            <button class="shift-toggle" id="shift-toggle" aria-pressed="false"><span class="shift-track" aria-hidden="true"><i></i></span>错位</button>
-          </div>
-          <div class="noteblock-row" id="noteblock-row" aria-label="音符盒"></div>
-        </div>
-      </div>
-    </section>
-
-    <!-- 04 · 作品档案：邮票册 -->
-    <section class="archive edge" id="archive" style="--bg:var(--paper-2)">
-      <div class="wrap">
-        <header class="section-head" data-reveal>
-          <p class="eyebrow"><b>03</b><span>作品档案</span><i>ARCHIVE</i></p>
-          <h2 class="title">邮票册</h2>
-          <p class="section-sub">每寄出一部作品，我们就在这里贴上一枚邮票。</p>
-        </header>
-        <div class="stamp-grid" id="stamp-grid"></div>
-      </div>
-    </section>
-
-    <!-- 05 · 关于：一封信 -->
-    <section class="letter-section edge" id="about" style="--bg:var(--seal)">
-      <div class="wrap">
-        <p class="eyebrow on-seal" data-reveal><b>04</b><span>关于我们</span><i>ABOUT</i></p>
-        <div class="envelope" id="envelope">
-          <div class="envelope-back" aria-hidden="true"></div>
-          <article class="letter">
-            <div class="letter-stamp perf" aria-hidden="true"><img src="./assets/img/envelope.svg" alt="" width="48" height="40"></div>
-            <span class="postmark-slot" data-postmark="寄语" data-postmark-color="#B4443A" aria-hidden="true"></span>
-            <p class="letter-date">寄自 · 方块世界</p>
-            <p class="letter-to">致 每一位收件人：</p>
-            <p>你好。我们是寄语 Couriers，一群在方块世界里写信的人。</p>
-            <p>“寄语”是托付出去的话。每做一张地图，我们都会想：这封信要寄给谁？他会在哪个场景停下来，会不会在某一句台词里认出自己？</p>
-            <p>所以我们慢慢搭、反复测，把每一处机关、每一段旋律都封进信封里。等它寄到你手上的时候，希望你会喜欢。</p>
-            <p>谢谢你拆开这封信。</p>
-            <p class="letter-sign"><span>寄语 Couriers 全体邮差</span></p>
-          </article>
-          <div class="pocket" aria-hidden="true"><div class="pocket-shape"></div><span class="pocket-seal">寄</span></div>
-        </div>
-      </div>
-    </section>
-
-    <!-- 06 · 成员：邮差名册 -->
-    <section class="team edge" id="team" style="--bg:var(--paper)">
-      <div class="wrap">
-        <header class="section-head" data-reveal>
-          <p class="eyebrow"><b>05</b><span>邮差名册</span><i>CREW</i></p>
-          <h2 class="title">投递这些信的人</h2>
-          <p class="section-sub" id="crew-note"></p>
-        </header>
-        <ul class="crew-grid" id="crew-grid"></ul>
-      </div>
-    </section>
-
-    <!-- 07 · 招募 -->
-    <section class="join edge" id="join" style="--bg:var(--ink)">
-      <div class="wrap join-grid">
-        <div class="join-copy" data-reveal>
-          <p class="eyebrow on-dark"><b>06</b><span>招募邮差</span><i>JOIN US</i></p>
-          <h2 class="title">成为下一位<br>邮差</h2>
-          <p>会搭方块、会写指令、会讲故事、会画画、会作曲，或者只是很会玩——寄语一直在等新的同伴。先来 QQ 群打个招呼吧。</p>
-          <div class="actions">
-            <a class="pbtn pbtn-paper" href="https://qm.qq.com/q/B6GiehmH62" target="_blank" rel="noopener noreferrer">加入 QQ 群<span aria-hidden="true">↗</span></a>
-            <a class="pbtn pbtn-ghost" href="https://space.bilibili.com/146080411" target="_blank" rel="noopener noreferrer">Bilibili 私信<span aria-hidden="true">↗</span></a>
-          </div>
-        </div>
-        <ul class="routes" id="routes" data-reveal></ul>
-      </div>
-    </section>
+      <canvas class="courier" id="courier" aria-hidden="true"></canvas>
+      <img class="letter-fly" id="letter-fly" src="./assets/img/envelope.svg" alt="" aria-hidden="true">
+      <canvas class="layer" id="l-fg" data-f="1.3" aria-hidden="true"></canvas>
+    </div>
   </main>
-
-  <footer class="site-footer edge" style="--bg:var(--paper)">
-    <div class="wrap footer-grid">
-      <div class="footer-brand">
-        <img src="./assets/img/couriers-bilingual-horizontal.svg" alt="寄语 Couriers" width="258" height="50" loading="lazy">
-        <p>Minecraft 地图创作团队。<br>把故事封进方块，寄给你。</p>
-      </div>
-      <nav class="footer-nav" aria-label="页脚导航">
-        <div><p class="pixel">站内</p><a href="#works">本期来信</a><a href="#archive">作品档案</a><a href="#about">关于我们</a><a href="#team">邮差名册</a></div>
-        <div><p class="pixel">社区</p><a href="https://space.bilibili.com/146080411" target="_blank" rel="noopener noreferrer">Bilibili ↗</a><a href="https://qm.qq.com/q/B6GiehmH62" target="_blank" rel="noopener noreferrer">QQ 群 ↗</a><a href="https://www.bilibili.com/video/BV1M8NQ6GE8M" target="_blank" rel="noopener noreferrer">新作预告 ↗</a></div>
-      </nav>
-      <div class="mailbox-wrap">
-        <div class="mail-note" id="mail-note" role="status" aria-live="polite"></div>
-        <button class="mailbox" id="mailbox" aria-label="打开信箱，收一封来信"><span class="mailbox-art" id="mailbox-art"></span><span class="pixel">点我收信</span></button>
-      </div>
-    </div>
-    <div class="wrap footer-bottom">
-      <p>© 2026 寄语 Couriers</p>
-      <p class="disclaimer">非官方 Minecraft 产品。未经 Mojang 或 Microsoft 批准，也不与 Mojang 或 Microsoft 关联。</p>
-      <a href="#home" class="back-top">回到顶部 ↑</a>
-    </div>
-  </footer>
 
   <aside class="quick-links" aria-label="社区链接">
     <a class="button platform bilibili" href="https://space.bilibili.com/146080411" target="_blank" rel="noopener noreferrer" aria-label="访问 Bilibili 主页" title="Bilibili"><span class="platform-icon" aria-hidden="true"></span></a>
@@ -201,5 +145,21 @@
       <img class="trailer-pixel-art" src="./assets/img/trailer.png" alt="" width="90" height="89" aria-hidden="true">
     </a>
   </aside>
+
+  <!-- 进场：幕布拉开，露出主视觉 -->
+  <dialog id="theater-dialog" aria-labelledby="td-title">
+    <h2 class="sr-only" id="td-title">《沉默乐章：错位音》</h2>
+    <div class="td-stage">
+      <img class="td-art" src="./assets/img/cmyz-hero-background-v2.png" alt="《沉默乐章：错位音》主视觉：落地钟旁围坐着几位角色，唱片与音符散落在红色座椅间" width="1920" height="1080">
+      <img class="td-title" src="./assets/img/cmyz-page-v2.png" alt="沉默乐章 · 错位音" width="1536" height="576">
+      <i class="td-curtain is-left" aria-hidden="true"></i><i class="td-curtain is-right" aria-hidden="true"></i>
+      <i class="td-valance" aria-hidden="true"></i>
+    </div>
+    <div class="td-actions">
+      <a class="ticket" href="https://www.bilibili.com/video/BV1M8NQ6GE8M" target="_blank" rel="noopener noreferrer">▶ 看预告片</a>
+      <a class="ticket is-plain" href="https://space.bilibili.com/146080411" target="_blank" rel="noopener noreferrer">关注动态 ↗</a>
+    </div>
+    <button class="td-close" id="theater-close">离场 ×</button>
+  </dialog>
 </body>
 </html>

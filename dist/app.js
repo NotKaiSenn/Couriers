@@ -1,397 +1,439 @@
 // ─────────────────────────────────────────────────────────────
-//  内容数据：改文字、换作品、加成员，都只需要改这里。
-//  带 sample:true 的条目是示例数据，页面上会显示「示例」标记；
-//  换成真实内容后删掉 sample 字段即可。
+//  寄语 Couriers · 送信路线
+//  页面是一条横向的像素路线：往下滚，邮差往右走；停下，他也停下。
+//  世界坐标以「格」为单位（1 格 = S 个 CSS 像素），y 从地面往上数。
 // ─────────────────────────────────────────────────────────────
 
-const crafts = [
-  { icon:'cube',   title:'搭建', en:'BUILD', text:'一砖一瓦，搭出可以走进去的场景。' },
-  { icon:'prompt', title:'机制', en:'LOGIC', text:'用指令与数据包，让世界回应你的每一步。' },
-  { icon:'book',   title:'叙事', en:'STORY', text:'台词、线索与结局，藏在地图的角落里。' },
-  { icon:'note',   title:'声音', en:'SOUND', text:'为每一个场景，配上属于它的旋律。' },
-];
-
-// 本期作品的「物流单」。版本和日期公布后替换「待公布」。
-const waybill = [
-  ['寄件人', '寄语 Couriers'],
-  ['收件人', '每一位玩家'],
-  ['内件', 'Minecraft 地图'],
-  ['游戏版本', '待公布'],
-  ['预计送达', '待公布'],
-];
-
-// 投递进度：current 是当前所处步骤的序号（从 0 开始）。
-const tracking = {
-  current: 2,
-  steps: [
-    { label:'立项', note:'已揽收' },
-    { label:'制作', note:'运输中' },
-    { label:'公开', note:'现已公开' },
-    { label:'测试', note:'待派送' },
-    { label:'发布', note:'待签收' },
-  ],
-};
-
-// 作品档案。有封面图就写 image；没有就用 scene 生成一张像素风景占位。
-const archive = [
-  { no:'01', title:'沉默乐章：错位音', meta:'2026 · 新作', status:'派送中', image:'./assets/img/cmyz-hero-background-v2.png', href:'https://space.bilibili.com/146080411' },
-  { no:'02', title:'雾港来信', meta:'20XX · 剧情解谜', status:'已送达', scene:{ seed:7, palette:'fog' }, sample:true },
-  { no:'03', title:'第七号站台', meta:'20XX · 冒险', status:'已送达', scene:{ seed:23, palette:'night' }, sample:true },
-  { no:'04', title:'冬眠计划', meta:'20XX · 跑酷', status:'已送达', scene:{ seed:41, palette:'snow' }, sample:true },
-];
-
-// 邮差名册。face 是 8×8 像素头像，颜色在 colors 里定义。
+// 内容数据 ────────────────────────────────────────────────────
+// 营火边的邮差。name 留空时头顶显示「???」；填上名字和 role 就会显示出来。
 const crew = [
-  { id:'001', name:'Courier_01', role:'策划', line:'把想法写成一封信。', sample:true,
-    face:['HHHHHHHH','HHHHHHHH','HSSHHSSH','SSSSSSSS','GWEGGEWG','SSSSSSSS','SSSMMSSS','SSSSSSSS'],
-    colors:{ H:'#302D41', E:'#595F91', G:'#302D41' } },
-  { id:'002', name:'Courier_02', role:'建筑', line:'把草图变成方块。', sample:true,
-    face:['AAAAAAAA','AYAAAAAA','aaaaaaaa','HSSSSSSH','SWESSEWS','SSSSSSSS','SSSMMSSS','SSSSSSSS'],
-    colors:{ H:'#6B4A35', E:'#3F6E4E', A:'#E8B04A', Y:'#F8DE8C', a:'#B9822E' } },
-  { id:'003', name:'Courier_03', role:'指令', line:'让世界回应每一步。', sample:true,
-    face:['AAAAAAAA','AHHHHHHA','AHSSSSHA','ASSSSSSA','AWESSEWA','ASSSSSSA','ASSMMSSA','ASSSSSSA'],
-    colors:{ H:'#2A2638', E:'#7FD3A6', A:'#3E5C4E' } },
-  { id:'004', name:'Courier_04', role:'美术', line:'给每封信画上邮票。', sample:true,
-    face:['.AAAAA..','AAAAAAA.','HHHHHHHH','HSSSSSSH','SWESSEWS','SSSSSSSS','SSSMMSSS','SSSSSSSS'],
-    colors:{ H:'#C98B5A', E:'#7A4B8C', A:'#B4443A' } },
-  { id:'005', name:'Courier_05', role:'音乐', line:'为场景谱一段旋律。', sample:true,
-    face:['HAAAAAAH','HHHHHHHH','HSSSSSSH','SSSSSSSS','AWESSEWA','ASSSSSSA','SSSMMSSS','SSSSSSSS'],
-    colors:{ H:'#E9E4EE', E:'#B4443A', A:'#595F91' } },
-  { id:'006', name:'Courier_06', role:'剧情', line:'把结局藏在角落里。', sample:true,
-    face:['HHHHHHHH','HHHHHHHH','HHSSSSHH','HSSSSSSH','HWESSEWH','HSSSSSSH','HSSMMSSH','HSSSSSSH'],
-    colors:{ H:'#E59AB0', E:'#595F91' } },
+  { name:'', role:'', cap:'#E8B04A', jacket:'#3E5C4E', x:910, facing:1 },
+  { name:'', role:'', cap:'#B4443A', jacket:'#4A3A5E', x:928, facing:1 },
+  { name:'', role:'', cap:'#F6F3F6', jacket:'#2F4A6B', x:974, facing:-1 },
+  { name:'', role:'', cap:'#E59AB0', jacket:'#5E3A44', x:992, facing:-1 },
 ];
-
 // 招募方向（文案草稿，按实际在招的岗位删改）。
-const routes = [
-  { code:'A1', role:'建筑', text:'地形、建筑与室内，一砖一瓦。' },
-  { code:'B2', role:'指令', text:'命令方块、数据包与小游戏机制。' },
-  { code:'C3', role:'剧情', text:'世界观、台词与分支结局。' },
-  { code:'D4', role:'美术', text:'海报、材质包与宣传物料。' },
-  { code:'E5', role:'音乐', text:'作曲、编曲与音效设计。' },
-  { code:'F6', role:'测试', text:'把每一个 bug 寄回给我们。' },
-];
+const roles = ['建筑', '指令', '剧情', '美术', '音乐', '测试'];
+// 音符盒的旋律：每敲一下走一个音；带 * 的音会「错位」半音。
+const melody = ['E5','G5','A5','G5','E5','D5','C5*','D5','E5','E5','D5','C5','B4*','C5','D5','C5'];
 
-// 页脚信箱里随机掉出来的话。
-const mailNotes = [
-  '今天也在搭方块。',
-  '下一封信，正在路上。',
-  '谢谢你读到这里。',
-  '记得常回来看看信箱。',
-  '这一页，是用方块写成的。',
-  '钟摆停下的时候，旋律会悄悄错位。',
-];
+// 世界里各站的位置（格）。
+const STOP = { po:76, theater:460, site:748, camp:950, board:1075, end:1196 };
+const CLIFF = 1250;
+const G = 48;              // 地面以下的厚度（格）
+const COURIER_AT = .35;    // 邮差站在屏幕宽度的这个位置
 
-// ─────────────────────────────────────────────────────────────
-//  像素绘制工具
-// ─────────────────────────────────────────────────────────────
-
-const $ = selector => document.querySelector(selector);
-const $$ = selector => [...document.querySelectorAll(selector)];
+// 工具 ────────────────────────────────────────────────────────
+const $ = s => document.querySelector(s);
+const $$ = s => [...document.querySelectorAll(s)];
+const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
 const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
-const esc = value => String(value).replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' })[c]);
-
-const ink = { K:'#302D41', D:'#595F91', B:'#929FD8', L:'#D7D3E2', W:'#F6F3F6', R:'#B4443A', Y:'#E8B04A' };
-
-// rows：字符串数组，每个字符对应 palette 里的一个颜色；「.」为透明。
-function pixelSVG(rows, palette, className = '') {
-  const height = rows.length;
-  const width = Math.max(...rows.map(row => row.length));
-  let rects = '';
-  rows.forEach((row, y) => {
-    for (let x = 0; x < row.length;) {
-      const fill = palette[row[x]];
-      let run = 1;
-      while (row[x + run] === row[x]) run++;
-      if (fill) rects += `<rect x="${x}" y="${y}" width="${run}" height="1" fill="${fill}"/>`;
-      x += run;
-    }
-  });
-  return `<svg class="${className}" viewBox="0 0 ${width} ${height}" shape-rendering="crispEdges" aria-hidden="true" focusable="false">${rects}</svg>`;
-}
-
-const icons = {
-  cube:['.....KK.....','...KKBBKK...','.KKBBBBBBKK.','KBBBBBBBBBBK','KDDBBBBBBLLK','KDDDDBBLLLLK','KDDDDDLLLLLK','KDDDDDLLLLLK','KDDDDDLLLLLK','.KKDDDLLLKK.','...KKDLKK...','.....KK.....'],
-  prompt:['KKKKKKKKKKKK','KLDLDDDDDDDK','KKKKKKKKKKKK','KWWWWWWWWWWK','KWBWWWWWWWWK','KWWBWWWWWWWK','KWWWBWWWWWWK','KWWBWWWWWWWK','KWBWWWBBBBWK','KWWWWWWWWWWK','KWWWWWWWWWWK','KKKKKKKKKKKK'],
-  book:['............','.KKKK..KKKK.','KWWWWKKWWWWK','KWLLWKKWLLWK','KWWWWKKWWWWK','KWLLLKKWLLWK','KWWWWKKWWWWK','KWLLWKKWLLLK','KWWWWKKWWWWK','KDDDDKKDDDDK','.KKKKBBKKKK.','.....BB.....'],
-  note:['....KKKKKKK.','....KBBBBBK.','....KKKKKKK.','....K.....K.','....K.....K.','....K.....K.','....K.....K.','.KKKK..KKKK.','KBBBK.KBBBK.','KBBBK.KBBBK.','.KKK...KKK..','............'],
-};
-
-const mailboxArt = ['....KKKKKKKK....','..KKBBBBBBBBKK..','.KBBLLBBBBBBBBK.','.KBLBBBBBBBBBBK.','KKKKKKKKKKKKKKKK','KDDDDDDDDDDDDDDK','KBBBBBBBBBBBBBBK','KBBKKKKKKKKKKBBK','KBBBBBBBBBBBBBBK','KBLBBBWWWWBBBBBK','KBLBBBWRRWBBBBBK','KBLBBBWWWWBBBBBK','KBLBBBBBBBBBBBBK','KBLBBBBBBBBBBBBK','KBBBBBBBBBBBBBBK','KDDDDDDDDDDDDDDK','KKKKKKKKKKKKKKKK','...KDDDDDDDDK...','...KDDDDDDDDK...','.KKKKKKKKKKKKKK.'];
-
-// 像素邮戳：外圈 + 内圈 + 右侧波浪注销线。
-function postmarkSVG() {
-  const size = 34, c = 16.5, rows = [];
-  for (let y = 0; y < size; y++) {
-    let row = '';
-    for (let x = 0; x < 66; x++) {
-      const d = Math.hypot(x + .5 - c, y + .5 - c);
-      let on = d <= 16 && d >= 14.2;
-      if (x > 32) on = [9, 16, 23].some(line => y === line + Math.round(Math.sin((x - 33) / 2.6) * 1.4));
-      row += on ? 'C' : '.';
-    }
-    rows.push(row);
-  }
-  return pixelSVG(rows, { C:'currentColor' }, 'postmark-art');
-}
-
-// 可重复的伪随机数，让占位风景每次刷新都一样。
+const esc = v => String(v).replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' })[c]);
 function seeded(seed) {
   return () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
 }
-const scenePalettes = {
-  fog:   { sky:['#8FA5BA','#B5C5D3','#DCE4EB'], sun:'#FFFFFF', far:'#7C91A6', top:'#93ABBF', ground:'#4F6B84', speck:'#456078', build:'#2E3A4A', glow:'#F4E3B0' },
-  night: { sky:['#141629','#22284A','#363C6B'], sun:'#F4E9C1', far:'#2A2F55', top:'#4E5C8E', ground:'#1E2240', speck:'#262B4F', build:'#0E0F1E', glow:'#E8B04A' },
-  snow:  { sky:['#AEBDE3','#CBD5EF','#E8EDF8'], sun:'#FFF6D8', far:'#98A6CC', top:'#FFFFFF', ground:'#C6D0E8', speck:'#B3BEDB', build:'#595F91', glow:'#FCE7A6' },
+const mix = (a, b, t) => {
+  const pa = a.match(/\w\w/g).map(h => parseInt(h, 16)), pb = b.match(/\w\w/g).map(h => parseInt(h, 16));
+  return '#' + pa.map((v, i) => Math.round(v + (pb[i] - v) * t).toString(16).padStart(2, '0')).join('');
 };
-const landmarks = { fog:'tower', night:'lamps', snow:'house' };
-function sceneSVG({ seed, palette }) {
-  const pal = scenePalettes[palette], rnd = seeded(seed), W = 24, H = 30, grid = [];
-  for (let y = 0; y < H; y++) grid.push(Array.from({ length:W }, () => pal.sky[y < 9 ? 0 : y < 15 ? 1 : 2]));
-  const sx = 3 + Math.floor(rnd() * 16), sy = 3 + Math.floor(rnd() * 4);
-  [[1,0],[0,1],[1,1],[2,1],[1,2],[0,0],[2,0],[0,2],[2,2]].slice(0, 9).forEach(([dx,dy], i) => { if (i < 5 || rnd() > .3) grid[sy+dy][sx+dx] = pal.sun; });
-  const phase = rnd() * 6;
-  for (let x = 0; x < W; x++) {
-    const far = 15 + Math.round(Math.sin(x / 3.2 + phase) * 2 + rnd() * .8);
-    for (let y = far; y < H; y++) grid[y][x] = pal.far;
+
+// 像素精灵 ────────────────────────────────────────────────────
+const courierHead = ['...KKKKK....','..KCCCCCK...','..KCCCCCCK..','..KccccccCCK','..KHSSSSSKK.','..KHSSSSESK.','..KHsSSSSSK.','...KsSSSSK..'];
+const courierBody = ['...KJJTJJK..','..KJJJJTJJK.','..KjJJJJTJK.','..KjJJJJBBBK','..KJJJJJBWBK','..KJJJJJbbbK','...KPPPPKKK.'];
+const legs = {
+  idle:['...KPPKPPK..','...KPPKPPK..','...KFFKFFK..'],
+  a:['...KPPPPPK..','..KppK.KPPK.','.KFFK...KFFK'],
+  b:['....KPPPK...','....KPPK....','....KFFFK...'],
+  c:['...KPPPPPK..','..KPPK.KppK.','.KFFK...KFFK'],
+};
+const courierFrames = ['idle', 'a', 'b', 'c', 'b'].map(k => [...courierHead, ...courierBody, ...legs[k]]);
+const courierPalette = { K:'#1A1826', C:'#929FD8', c:'#6E77B6', S:'#F2C9A9', s:'#D6A588', E:'#1A1826', H:'#4A3428', J:'#3B3856', j:'#514E73', T:'#C08A52', B:'#9A6A3E', b:'#74502E', W:'#F6F3F6', P:'#2A2838', p:'#22202F', F:'#2B2433' };
+const mailbox = ['....KKKKKKKK....','..KKBBBBBBBBKK..','.KBBLLBBBBBBBBK.','.KBLBBBBBBBBBBK.','KKKKKKKKKKKKKKKK','KDDDDDDDDDDDDDDK','KBBBBBBBBBBBBBBK','KBBKKKKKKKKKKBBK','KBBBBBBBBBBBBBBK','KBLBBBWWWWBBBBBK','KBLBBBWRRWBBBBBK','KBLBBBWWWWBBBBBK','KBLBBBBBBBBBBBBK','KBLBBBBBBBBBBBBK','KBBBBBBBBBBBBBBK','KDDDDDDDDDDDDDDK','KKKKKKKKKKKKKKKK','...KDDDDDDDDK...','...KDDDDDDDDK...','.KKKKKKKKKKKKKK.'];
+const mailboxPalette = { K:'#2A2838', D:'#595F91', B:'#929FD8', L:'#D7D3E2', W:'#F6F3F6', R:'#B4443A' };
+const fireFrames = [
+  ['...R....','...RR...','..RYR...','..RYYR..','.RYWYR..','.RYWWYR.','.RYWWYR.','..RYYR..','BBKBBKBB','KBBKKBBK'],
+  ['....R...','...RR...','...RYR..','..RYYR..','..RYWYR.','.RYWWYR.','.RYWWYR.','..RYYR..','BBKBBKBB','KBBKKBBK'],
+];
+const firePalette = { R:'#D9503A', Y:'#F2A541', W:'#FCE7A6', B:'#6E4A2A', K:'#3A2A20' };
+
+function blit(ctx, map, pal, x, top, flip = false) {
+  const w = map[0].length;
+  map.forEach((row, j) => {
+    for (let i = 0; i < row.length; i++) {
+      const c = pal[row[i]];
+      if (!c) continue;
+      ctx.fillStyle = c;
+      ctx.fillRect(x + (flip ? w - 1 - i : i), top + j, 1, 1);
+    }
+  });
+}
+function spriteCanvas(map, pal, flip = false) {
+  const c = document.createElement('canvas');
+  c.width = map[0].length; c.height = map.length;
+  blit(c.getContext('2d'), map, pal, 0, 0, flip);
+  return c;
+}
+function pixelDisc(r, fill, edge) {
+  const c = document.createElement('canvas'), d = r * 2 + 1;
+  c.width = c.height = d;
+  const ctx = c.getContext('2d');
+  for (let y = 0; y < d; y++) for (let x = 0; x < d; x++) {
+    const dist = Math.hypot(x - r, y - r);
+    if (dist <= r + .3) { ctx.fillStyle = dist > r - 1.2 && edge ? edge : fill; ctx.fillRect(x, y, 1, 1); }
   }
-  const ground = [];
-  for (let x = 0; x < W; x++) ground.push(21 + Math.round(Math.sin(x / 4.5 + phase * 2) * 1.3));
-  const landmark = landmarks[palette] || 'tower';
-  const tw = landmark === 'house' ? 7 : landmark === 'lamps' ? 13 : 3;
-  const tx = 3 + Math.floor(rnd() * (W - tw - 6));
-  const base = Math.min(...ground.slice(tx, tx + tw));
-  for (let x = tx; x < tx + tw; x++) ground[x] = base;
-  const put = (x, y, c) => { if (y >= 0 && y < H && x >= 0 && x < W) grid[y][x] = c; };
-  if (landmark === 'tower') {
-    // 灯塔：条纹塔身 + 顶部灯室
-    for (let y = base - 10; y < base; y++) for (let x = tx; x < tx + 3; x++) put(x, y, (base - y) % 4 < 2 ? pal.build : pal.sky[2]);
-    for (let x = tx - 1; x < tx + 4; x++) put(x, base - 11, pal.build);
-    put(tx + 1, base - 12, pal.glow); put(tx + 1, base - 13, pal.build);
-  } else if (landmark === 'lamps') {
-    // 站台：一条长椅般的月台和三盏路灯
-    for (let x = tx; x < tx + tw; x++) { put(x, base - 1, pal.build); put(x, base - 2, pal.top); }
-    for (const lx of [tx + 1, tx + 6, tx + 11]) { for (let y = base - 7; y < base - 2; y++) put(lx, y, pal.build); put(lx, base - 8, pal.glow); put(lx - 1, base - 8, pal.build); put(lx + 1, base - 8, pal.build); }
-  } else {
-    // 小屋：阶梯屋顶、亮着的窗和烟囱
-    for (let y = base - 4; y < base; y++) for (let x = tx + 1; x < tx + 6; x++) put(x, y, pal.build);
-    for (let r = 0; r < 3; r++) for (let x = tx + r; x < tx + tw - r; x++) put(x, base - 5 - r, pal.far === pal.build ? pal.speck : pal.top);
-    put(tx + 2, base - 3, pal.glow); put(tx + 4, base - 3, pal.glow);
-    put(tx + 5, base - 8, pal.build); put(tx + 5, base - 9, pal.build);
-  }
-  for (let x = 0; x < W; x++) for (let y = ground[x]; y < H; y++) grid[y][x] = y === ground[x] ? pal.top : rnd() < .14 ? pal.speck : pal.ground;
-  let rects = '';
-  grid.forEach((row, y) => { for (let x = 0; x < W;) { let run = 1; while (row[x + run] === row[x]) run++; rects += `<rect x="${x}" y="${y}" width="${run}" height="1" fill="${row[x]}"/>`; x += run; } });
-  return `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid slice" shape-rendering="crispEdges" aria-hidden="true" focusable="false">${rects}</svg>`;
+  return c;
 }
 
-// 阶梯状的边：给页眉纸边、分区边缘、信封口共用。
-function stairs(x0, y0, x1, y1, step) {
-  const points = [], count = Math.max(1, Math.round(Math.abs(x1 - x0) / step));
-  for (let i = 0; i < count; i++) {
-    const xa = x0 + (x1 - x0) * i / count, xb = x0 + (x1 - x0) * (i + 1) / count;
-    const y = Math.round((y0 + (y1 - y0) * (i + .5) / count) / 4) * 4;
-    points.push(`${xa.toFixed(1)}px ${y}px`, `${xb.toFixed(1)}px ${y}px`);
-  }
-  return points;
+// 布局 ────────────────────────────────────────────────────────
+const world = $('#world'), stage = $('#stage'), overlay = $('#overlay');
+const layers = $$('.layer').map(el => ({ el, f:Number(el.dataset.f) }));
+let S = 4, vwU = 360, H = 225, W = 1460, travel = 0;
+
+function paint(canvas, widthU, draw) {
+  canvas.width = Math.ceil(widthU);
+  canvas.height = H;
+  canvas.style.width = `${canvas.width * S}px`;
+  canvas.style.height = `${H * S}px`;
+  const ctx = canvas.getContext('2d');
+  ctx.imageSmoothingEnabled = false;
+  const base = H - G;
+  // r(x, y, w, h)：左下角在 (x, y)，y 为离地高度（负数在地下）。
+  const r = (x, y, w, h, color) => { ctx.fillStyle = color; ctx.fillRect(Math.round(x), Math.round(base - y - h), Math.round(w), Math.round(h)); };
+  draw({ ctx, r, base, width:canvas.width });
 }
-function raggedEdge(width, pixel, depths, runs, top, flip) {
-  const points = [];
-  let x = 0, step = 0;
-  while (x < width) {
-    const y = flip ? top + depths[step % depths.length] * pixel : top - depths[step % depths.length] * pixel;
+const layerWidth = f => vwU + (W - vwU) * f;
+
+function layout() {
+  const vw = innerWidth, vh = innerHeight;
+  S = clamp(Math.min(Math.floor((vh - 100) / 198), Math.floor(vw / 125)), 2, 4);
+  vwU = Math.ceil(vw / S);
+  H = Math.ceil(vh / S);
+  W = Math.ceil(STOP.end + (1 - COURIER_AT) * vwU);
+  travel = Math.max(0, W * S - vw);
+  world.style.height = `${vh + travel}px`;
+  const root = document.documentElement.style;
+  root.setProperty('--s', S);
+  root.setProperty('--g', G);
+  overlay.style.width = `${W * S}px`;
+  $('#end').style.setProperty('--x', W - vwU + 6);
+  $('#ground-note').style.setProperty('--x', W - vwU + 6);
+
+  paint($('#l-stars'), layerWidth(.04), drawStars);
+  paint($('#l-far'), layerWidth(.16), drawFar);
+  paint($('#l-mid'), layerWidth(.45), drawMid);
+  paint($('#l-main'), W, drawMain);
+  paint($('#l-lights'), W, drawLights);
+  paint($('#l-fg'), layerWidth(1.3), drawForeground);
+
+  const moon = pixelDisc(6, '#F4E9C1', '#DCCFA6'), sun = pixelDisc(9, '#FCE7A6', '#F6B66A');
+  [[$('#moon'), moon], [$('#sun'), sun]].forEach(([el, src]) => {
+    el.width = src.width; el.height = src.height;
+    el.getContext('2d').drawImage(src, 0, 0);
+    el.style.width = el.style.height = `${src.width * S}px`;
+  });
+  const courier = $('#courier');
+  courier.width = 12; courier.height = 18;
+  courier.style.left = `${Math.round(vwU * COURIER_AT - 6) * S}px`;
+  lastFrame = -1;
+  update();
+}
+
+// 绘制：天空与远景 ────────────────────────────────────────────
+function drawStars({ ctx, width }) {
+  const rnd = seeded(3);
+  for (let i = 0; i < width * .9; i++) {
+    const x = Math.floor(rnd() * width), y = Math.floor(rnd() * (H - G - 40));
+    ctx.fillStyle = rnd() > .85 ? '#FCE7A6' : '#D7D3E2';
+    ctx.globalAlpha = .35 + rnd() * .65;
+    ctx.fillRect(x, y, 1, 1);
+    if (rnd() > .94) { ctx.fillRect(x - 1, y, 3, 1); ctx.fillRect(x, y - 1, 1, 3); }
+  }
+  ctx.globalAlpha = 1;
+}
+function ridge(r, width, seed, min, max, step, color) {
+  const rnd = seeded(seed);
+  let h = (min + max) / 2, drift = 0;
+  for (let x = 0; x < width; x += step) {
+    drift = clamp(drift + (rnd() - .5) * 3, -3, 3);
+    h = clamp(h + drift, min, max);
+    r(x, -G, step, G + Math.round(h / 2) * 2, color);
+  }
+}
+function drawFar({ r, width }) {
+  ridge(r, width, 5, 40, 86, 4, '#5D629B');
+  ridge(r, width, 9, 16, 48, 3, '#464A82');
+}
+function drawMid({ r, width }) {
+  const rnd = seeded(21);
+  for (let x = 4; x < width; x += 10 + Math.floor(rnd() * 26)) {
+    if (rnd() > .78) {
+      // 远处的小屋：亮着一两扇窗
+      const w = 14 + Math.floor(rnd() * 8), h = 10 + Math.floor(rnd() * 6);
+      r(x, -G, w, G + h, '#2E3158');
+      for (let i = 0; i < w / 2; i++) r(x + i, h + i, w - i * 2, 1, '#2E3158');
+      if (rnd() > .3) r(x + 3, 4, 2, 3, '#E8B04A');
+      if (rnd() > .5) r(x + w - 6, 5, 2, 3, '#E8B04A');
+      x += w;
+    } else {
+      const h = 14 + Math.floor(rnd() * 22), w = 10 + Math.floor(rnd() * 8);
+      r(x + w / 2 - 1, -G, 3, G + h, '#262949');
+      r(x, h - 2, w, 10, '#2A2D52');
+      r(x + 2, h + 8, w - 4, 4, '#2A2D52');
+      r(x + 4, h + 12, w - 8, 2, '#2A2D52');
+    }
+  }
+}
+
+// 绘制：主路线 ────────────────────────────────────────────────
+const OL = '#2A2838';
+function tree(r, x, h, tint = 0) {
+  const leaf = ['#2F5A4A', '#2B5264'][tint], hi = ['#3E6E58', '#386877'][tint], lo = ['#244A3C', '#20414F'][tint];
+  r(x + 7, 0, 4, h, '#5A3D30'); r(x + 7, 0, 1, h, '#47302A');
+  r(x, h - 2, 18, 10, leaf); r(x + 2, h + 8, 14, 4, leaf); r(x + 5, h + 12, 8, 3, leaf);
+  r(x, h - 2, 18, 2, lo); r(x + 2, h + 6, 6, 3, hi); r(x + 5, h + 10, 4, 2, hi);
+}
+function lamp(r, x) {
+  r(x, 0, 2, 26, OL); r(x - 1, 26, 4, 5, OL); r(x, 27, 2, 3, '#F2C46A'); r(x - 2, 31, 6, 1, OL); r(x - 1, 0, 4, 2, OL);
+}
+function stoneBlock(r, x, y) {
+  r(x, y, 8, 8, OL); r(x + 1, y + 1, 7, 7, '#8A8698'); r(x + 1, y + 7, 7, 1, '#A39FB2'); r(x + 7, y + 1, 1, 6, '#6F6B80');
+}
+function drawMain({ ctx, r, width }) {
+  const rnd = seeded(11);
+  // 地面
+  r(0, -G, CLIFF, G, '#6B4A3A');
+  r(0, -G, CLIFF, 20, '#4E4A5E');
+  for (let i = 0; i < CLIFF * 4; i++) {
+    const x = Math.floor(rnd() * CLIFF), y = -Math.ceil(rnd() * (G - 4)) - 3;
+    r(x, y, 1 + (rnd() > .7), 1, y < -G + 20 ? (rnd() > .5 ? '#5C586E' : '#433F52') : (rnd() > .5 ? '#5A3D30' : '#7C5846'));
+  }
+  r(0, -3, CLIFF, 3, '#5B8A5E'); r(0, -1, CLIFF, 1, '#6F9C6A');
+  for (let x = 0; x < CLIFF; x += 2 + Math.floor(rnd() * 5)) r(x, -4 - Math.floor(rnd() * 2), 1, 2, '#5B8A5E');
+  for (let x = 6; x < CLIFF; x += 5 + Math.floor(rnd() * 9)) {
+    if (rnd() > .55) continue;
+    r(x, 0, 1, 1, '#5B8A5E'); r(x, 1, 1, 1, ['#F08DA6', '#F6F3F6', '#E8B04A', '#929FD8'][Math.floor(rnd() * 4)]);
+  }
+  // 悬崖与海
+  for (let i = 0; i < 3; i++) r(CLIFF + i * 2, -G, 2, G - 3 - i * 4, i % 2 ? '#433F52' : '#4E4A5E');
+  r(CLIFF, -1, 4, 1, '#6F9C6A');
+  r(CLIFF + 6, -G, width, G - 12, '#2E4A7A');
+  r(CLIFF + 6, -13, width, 1, '#4D6FA8');
+  for (let x = CLIFF + 8; x < width; x += 3 + Math.floor(rnd() * 8)) r(x, -G + 4 + Math.floor(rnd() * (G - 20)), 2 + Math.floor(rnd() * 3), 1, rnd() > .7 ? '#F4C79A' : '#6F8FC4');
+
+  // 树与路灯
+  [[-6, 16], [250, 15, 1], [330, 18], [590, 14, 1], [640, 17], [846, 15], [868, 19, 1], [1130, 16], [1226, 14, 1]].forEach(([x, h, t]) => tree(r, x, h, t || 0));
+  [20, 300, 622, 860, 1160].forEach(x => lamp(r, x));
+
+  // 邮局
+  r(40, 0, 72, 44, OL); r(41, 0, 70, 43, '#E4DEEA'); r(105, 0, 6, 43, '#CFC8DA');
+  r(41, 0, 70, 4, '#9A93A8'); r(41, 4, 70, 1, '#7F7891');
+  [48, 91].forEach(wx => { r(wx, 15, 13, 13, OL); r(wx + 1, 16, 11, 11, '#F2C46A'); r(wx + 6, 16, 1, 11, OL); r(wx + 1, 21, 11, 1, OL); r(wx - 1, 14, 15, 1, '#9A93A8'); });
+  r(66, 0, 20, 4, '#9A93A8'); r(69, 4, 14, 24, OL); r(70, 4, 12, 23, '#3B3856'); r(70, 4, 5, 23, '#454268'); r(79, 15, 1, 2, '#E8B04A');
+  r(59, 29, 34, 11, OL); r(60, 30, 32, 9, '#8A5A35');
+  r(93, 50, 9, 20, OL); r(94, 50, 7, 19, '#8A8698'); r(92, 69, 11, 2, OL);
+  r(34, 43, 84, 2, '#3E4377');
+  for (let i = 0; i < 12; i++) { const inset = i * 3, y = 45 + i * 2; r(36 + inset, y, 80 - inset * 2, 2, '#6E77B6'); r(36 + inset, y + 1, 3, 1, '#929FD8'); }
+  blit(ctx, mailbox, mailboxPalette, 118, H - G - 20);
+
+  // 音乐厅
+  r(394, 0, 132, 2, '#8A8698'); r(397, 2, 126, 2, '#9A93A8');
+  r(400, 4, 120, 88, OL); r(401, 4, 118, 87, '#7A1F26');
+  [401, 410, 506, 515].forEach(px => { r(px, 4, 4, 87, '#5E161C'); r(px, 4, 1, 87, '#8E2C33'); });
+  r(416, 38, 88, 51, '#C8963E'); r(417, 39, 86, 49, '#1A0D10');
+  r(426, 28, 68, 6, OL); r(427, 29, 66, 4, '#C8963E'); r(427, 32, 66, 1, '#E8C27A');
+  r(446, 4, 28, 24, OL); r(447, 4, 26, 23, '#2A0E12'); r(448, 4, 11, 22, '#4A1418'); r(461, 4, 11, 22, '#4A1418'); r(457, 13, 1, 3, '#E8B04A'); r(462, 13, 1, 3, '#E8B04A');
+  r(396, 91, 128, 5, '#C8963E'); r(396, 91, 128, 1, '#8E6A2A'); r(396, 95, 128, 1, '#E8C27A');
+  r(400, 96, 120, 4, '#6A1A20');
+  for (let i = 0; i < 8; i++) r(436 + i * 3, 100 + i * 2, 48 - i * 6, 2, i % 3 ? '#6A1A20' : '#5E161C');
+  const face = pixelDisc(6, '#F2E6C8', '#C8963E');
+  ctx.drawImage(face, 454, H - G - 107 - 6);
+  r(424, 100, 2, 16, '#3A2A2A'); r(494, 100, 2, 16, '#3A2A2A');
+
+  // 工地：半截石墙、脚手架、塔吊
+  [3, 4, 2, 4, 3, 1, 2, 0, 1, 2].forEach((n, i) => { for (let k = 0; k < n; k++) stoneBlock(r, 700 + i * 8, k * 8); });
+  [696, 742, 788].forEach(px => r(px, 0, 2, 54, '#8A5A35'));
+  [24, 48].forEach(py => r(694, py, 98, 2, '#A8784A'));
+  for (let k = 0; k < 22; k++) r(698 + k * 2, 2 + k, 2, 1, '#8A5A35');
+  r(806, 0, 4, 94, '#E8B04A'); for (let y = 2; y < 92; y += 4) r(807, y, 2, 2, '#8E6A2A');
+  r(758, 92, 64, 3, '#E8B04A'); r(814, 86, 8, 6, '#5A5A6A'); r(806, 94, 4, 4, '#3A3A4A');
+
+  // 营火：长凳、石圈与帐篷
+  r(902, 0, 16, 3, '#6E4A2A'); r(902, 3, 16, 1, '#8A5E36'); r(984, 0, 16, 3, '#6E4A2A'); r(984, 3, 16, 1, '#8A5E36');
+  [[944, 0], [948, 0], [962, 0], [966, 0]].forEach(([x, y]) => r(x, y, 3, 2, '#8A8698'));
+  for (let y = 0; y < 22; y++) {
+    const half = Math.round((22 - y) * .75);
+    for (let x = 1018 - half; x < 1018 + half; x++) r(x, y, 1, 1, Math.floor((x - 1000) / 3) % 2 ? '#929FD8' : '#F6F3F6');
+  }
+  for (let y = 0; y < 10; y++) r(1018 - Math.round((10 - y) * .4), y, Math.round((10 - y) * .8) + 1, 1, '#2A2838');
+
+  // 终点邮筒
+  blit(ctx, mailbox, mailboxPalette, 1204, H - G - 20);
+}
+function drawLights({ ctx, base }) {
+  ctx.globalCompositeOperation = 'lighter';
+  const glow = (x, y, rad, color, alpha) => {
+    const g = ctx.createRadialGradient(x, base - y, 0, x, base - y, rad);
+    g.addColorStop(0, color + Math.round(alpha * 255).toString(16).padStart(2, '0'));
+    g.addColorStop(1, color + '00');
+    ctx.fillStyle = g;
+    ctx.fillRect(x - rad, base - y - rad, rad * 2, rad * 2);
+  };
+  [20, 300, 622, 860, 1160].forEach(x => glow(x + 1, 28, 16, '#F2C46A', .45));
+  [[54, 21], [97, 21]].forEach(([x, y]) => glow(x, y, 14, '#F2C46A', .35));
+  glow(460, 63, 58, '#F2A541', .3); glow(460, 30, 30, '#F2C46A', .4); glow(460, 12, 18, '#F2A541', .3);
+  glow(955, 6, 34, '#F2A541', .5);
+  glow(808, 96, 5, '#F0505A', .9);
+}
+function drawForeground({ r, width }) {
+  // 近景：零星几丛深色灌木，比路面走得快一点，制造纵深。
+  const rnd = seeded(77), c = '#191A30';
+  for (let x = 30 + Math.floor(rnd() * 60); x < width; x += 90 + Math.floor(rnd() * 140)) {
+    const w = 8 + Math.floor(rnd() * 8), h = 4 + Math.floor(rnd() * 4);
+    r(x, -10, w, h + 6, c); r(x + 2, -4 + h, w - 4, 2, c); r(x + 4, -2 + h, w - 8, 1, c);
+    if (rnd() > .5) { r(x + w + 1, -10, 1, 9, c); r(x + w, -1, 3, 1, c); }
+  }
+}
+
+// 营火边的邮差与告示牌 ───────────────────────────────────────
+const npcFrames = crew.map(member => {
+  const pal = { ...courierPalette, C:member.cap, c:mix(member.cap.slice(1), '302D41', .35), J:member.jacket, j:mix(member.jacket.slice(1), 'FFFFFF', .12), T:member.jacket, B:member.jacket, b:member.jacket, W:member.jacket };
+  return spriteCanvas([...courierHead, ...courierBody, ...legs.idle], pal, member.facing < 0);
+});
+$('#crew').outerHTML = crew.map((member, i) => `
+  <span class="npc at" style="--x:${member.x};--y:0;--d:${i * .37}s" ${member.name ? '' : 'aria-hidden="true"'}>
+    <span class="nametag">${member.name ? esc(member.name) : '???'}${member.role ? `<small>${esc(member.role)}</small>` : ''}</span>
+  </span>`).join('');
+$$('.npc').forEach((el, i) => { const c = npcFrames[i]; c.className = 'npc-sprite'; el.prepend(c); });
+if (crew.every(member => member.name)) $('#camp-note').textContent = '路过的话，打个招呼。';
+$('#slips').innerHTML = roles.map((role, i) => `<li style="--r:${[-3, 2, -1, 3, -2, 1][i % 6]}deg">${esc(role)}</li>`).join('');
+
+const fireSheet = document.createElement('canvas');
+fireSheet.width = 16; fireSheet.height = 10;
+fireFrames.forEach((frame, i) => blit(fireSheet.getContext('2d'), frame, firePalette, i * 8, 0));
+$('.fire').style.backgroundImage = `url(${fireSheet.toDataURL()})`;
+
+// 滚动 → 行走 ────────────────────────────────────────────────
+const skyStops = [
+  [0, '3D4183', 'D7A6B8', 0, 1],
+  [.32, '252858', '6B6AA6', .6, .8],
+  [.58, '0E1027', '262A58', 1, .62],
+  [.84, '1A1D45', '5A5E9A', .7, .72],
+  [1, '4A5594', 'F4C79A', .15, .95],
+];
+function skyAt(t) {
+  let i = 0;
+  while (i < skyStops.length - 2 && t > skyStops[i + 1][0]) i++;
+  const [t0, top0, bot0, n0, d0] = skyStops[i], [t1, top1, bot1, n1, d1] = skyStops[i + 1];
+  const k = clamp((t - t0) / (t1 - t0), 0, 1);
+  return { top:mix(top0, top1, k), bottom:mix(bot0, bot1, k), night:n0 + (n1 - n0) * k, dim:d0 + (d1 - d0) * k };
+}
+
+const courierCtx = $('#courier').getContext('2d');
+let lastPx = 0, facing = 1, lastFrame = -1, idleTimer, delivered = false, queued = false;
+function drawCourier(frame) {
+  if (frame === lastFrame) return;
+  lastFrame = frame;
+  courierCtx.clearRect(0, 0, 12, 18);
+  blit(courierCtx, courierFrames[frame], courierPalette, 0, 0);
+}
+function update() {
+  queued = false;
+  const px = clamp(scrollY - world.offsetTop, 0, travel);
+  const t = travel ? px / travel : 0;
+  layers.forEach(({ el, f }) => { el.style.transform = `translate3d(${-Math.round(px * f)}px,0,0)`; });
+
+  const sky = skyAt(t);
+  stage.style.setProperty('--sky-top', sky.top);
+  stage.style.setProperty('--sky-bottom', sky.bottom);
+  stage.style.setProperty('--night', sky.night.toFixed(3));
+  stage.style.setProperty('--dim', sky.dim.toFixed(3));
+  stage.style.setProperty('--fg', clamp((1 - t) / .1, 0, 1).toFixed(3));
+  stage.style.setProperty('--hour', `${(t * 360).toFixed(1)}deg`);
+  stage.style.setProperty('--minute', `${(t * 360 * 12).toFixed(1)}deg`);
+  const moon = $('#moon');
+  moon.style.transform = `translate(${Math.round(innerWidth * (.86 - t * .72))}px, ${Math.round(innerHeight * (.34 - Math.sin(t * Math.PI) * .2))}px)`;
+  const rise = clamp((t - .84) / .16, 0, 1);
+  moon.style.opacity = clamp(sky.night * 1.4 - rise, 0, 1);
+  $('#sun').style.transform = `translate(${Math.round(innerWidth * .72)}px, ${Math.round(innerHeight - G * S - rise * innerHeight * .42)}px)`;
+  $('#sun').style.opacity = rise;
+
+  // 邮差：滚动多少走多少，往回滚就转身
+  const moved = px - lastPx;
+  if (Math.abs(moved) > .5) {
+    facing = moved > 0 ? 1 : -1;
+    drawCourier(1 + Math.floor(Math.abs(px) / (5 * S)) % 4);
+    clearTimeout(idleTimer);
+    idleTimer = setTimeout(() => drawCourier(0), 140);
+  } else if (lastFrame < 0) drawCourier(0);
+  lastPx = px;
+  $('#courier').style.transform = `scaleX(${facing})`;
+
+  const at = px / S + vwU * COURIER_AT;
+  stage.classList.toggle('at-theater', at > 396 && at < 540);
+  stage.classList.toggle('at-camp', at > 880 && at < 1030);
+  $('.trailer-shortcut').classList.toggle('is-tucked', at > 380 && at < 600 || at > 1120);
+  const zone = at < 330 ? 'po' : at > 370 && at < 640 ? 'theater' : at > 870 && at < 1035 ? 'camp' : at >= 1035 && at < 1140 ? 'board' : '';
+  $$('#main-nav a').forEach(link => link.toggleAttribute('aria-current', link.dataset.stop === zone));
+  if (!delivered && at >= STOP.end - 2) deliver();
+}
+addEventListener('scroll', () => { if (!queued) { queued = true; requestAnimationFrame(update); } }, { passive:true });
+let resizeTimer;
+addEventListener('resize', () => { clearTimeout(resizeTimer); resizeTimer = setTimeout(layout, 120); });
+
+function deliver() {
+  delivered = true;
+  stage.classList.add('is-delivered');
+  const letter = $('#letter-fly');
+  letter.style.setProperty('--from', `${Math.round(vwU * COURIER_AT) * S}px`);
+  letter.style.setProperty('--to', `${(1212 - (W - vwU)) * S}px`);
+  letter.classList.remove('is-flying'); void letter.offsetWidth; letter.classList.add('is-flying');
+}
+
+// 去某一站：平滑滚动，邮差会一路小跑过去。
+function travelTo(stop) {
+  const x = STOP[stop] ?? 0;
+  const target = world.offsetTop + clamp((x - vwU * COURIER_AT) * S, 0, travel);
+  scrollTo({ top:target, behavior:reducedMotion.matches ? 'auto' : 'smooth' });
+}
+$$('[data-stop]').forEach(el => el.addEventListener('click', event => { event.preventDefault(); setMenu(false); travelTo(el.dataset.stop); }));
+document.addEventListener('keydown', event => {
+  if (event.target.closest('input, textarea, dialog')) return;
+  if (event.key === 'ArrowRight' || event.key === 'ArrowLeft') {
+    event.preventDefault();
+    scrollBy({ top:(event.key === 'ArrowRight' ? 1 : -1) * 48 * S, behavior:reducedMotion.matches ? 'auto' : 'smooth' });
+  }
+});
+
+// 页眉纸边与导航 ──────────────────────────────────────────────
+const paperHeader = $('.site-header');
+function updatePaperEdge() {
+  const width = paperHeader.clientWidth, pixel = 4, base = 72;
+  const depths = [1,2,2,1,0,1,3,2,1,1,0,2,3,1,2,0,1,2,1,3,2,1,0], runs = [4,2,5,3,2,4,2,3,5,2,3,4,2,5,3,2,4];
+  const points = ['0px 0px', `0px ${base + depths[0] * pixel}px`];
+  for (let x = 0, step = 0; x < width; step++) {
+    const y = base + depths[step % depths.length] * pixel;
     points.push(`${x}px ${y}px`);
     x = Math.min(width, x + runs[step % runs.length] * pixel);
     points.push(`${x}px ${y}px`);
-    step++;
   }
-  return points;
-}
-
-// ─────────────────────────────────────────────────────────────
-//  页眉与分区边缘
-// ─────────────────────────────────────────────────────────────
-
-const paperHeader = $('.site-header');
-const headerDepths = [1,2,2,1,0,1,3,2,1,1,0,2,3,1,2,0,1,2,1,3,2,1,0];
-const headerRuns = [4,2,5,3,2,4,2,3,5,2,3,4,2,5,3,2,4];
-function updatePaperEdge() {
-  const width = paperHeader.clientWidth;
-  const style = getComputedStyle(paperHeader);
-  const pixel = Number(style.getPropertyValue('--paper-pixel')) || 4;
-  const base = Number(style.getPropertyValue('--paper-base')) || 72;
-  const points = ['0px 0px', `0px ${base + headerDepths[0] * pixel}px`, ...raggedEdge(width, pixel, headerDepths, headerRuns, base, true), `${width}px 0px`];
+  points.push(`${width}px 0px`);
   paperHeader.style.setProperty('--paper-edge', `polygon(${points.join(',')})`);
 }
 updatePaperEdge();
 new ResizeObserver(updatePaperEdge).observe(paperHeader);
-
-// 每个 .edge 分区顶部都长出一排像素「纸齿」，图案按顺序错开。
-$$('.edge').forEach((section, index) => {
-  const depths = headerDepths.slice(index * 3).concat(headerDepths.slice(0, index * 3)).map(d => d + 1);
-  const runs = headerRuns.slice(index * 2).concat(headerRuns.slice(0, index * 2));
-  const draw = () => {
-    const width = section.clientWidth, pixel = 4, height = pixel * 4;
-    const points = ['0px 100%', ...raggedEdge(width, pixel, depths, runs, height, false), `${width}px 100%`];
-    section.style.setProperty('--edge-path', `polygon(${points.join(',')})`);
-  };
-  draw();
-  new ResizeObserver(draw).observe(section);
-});
-
-// ─────────────────────────────────────────────────────────────
-//  主视觉滚动
-// ─────────────────────────────────────────────────────────────
-
-let scrollQueued = false;
-function updateScene() {
-  const hero = $('.hero');
-  const travel = Math.max(1, hero.offsetHeight - innerHeight);
-  const progress = reducedMotion.matches ? 0 : Math.min(1, Math.max(0, scrollY / travel));
-  hero.style.setProperty('--progress', progress.toFixed(4));
-  scrollQueued = false;
-}
-addEventListener('scroll', () => {
-  if (!scrollQueued) { scrollQueued = true; requestAnimationFrame(updateScene); }
-}, { passive:true });
-addEventListener('resize', updateScene);
-updateScene();
-
-const trailerShortcut = $('.trailer-shortcut');
-const overlapping = new Set();
-const tuckObserver = new IntersectionObserver(entries => {
-  entries.forEach(entry => entry.isIntersecting ? overlapping.add(entry.target) : overlapping.delete(entry.target));
-  trailerShortcut.classList.toggle('is-tucked', overlapping.size > 0);
-}, { rootMargin:'0px 0px -35% 0px' });
-[$('#works'), $('.site-footer')].forEach(el => tuckObserver.observe(el));
-
-// ─────────────────────────────────────────────────────────────
-//  导航
-// ─────────────────────────────────────────────────────────────
-
 function setMenu(open) {
   $('.menu-toggle').setAttribute('aria-expanded', open);
   $('.menu-toggle').setAttribute('aria-label', open ? '关闭导航' : '打开导航');
   $('#main-nav').classList.toggle('open', open);
 }
 $('.menu-toggle').addEventListener('click', () => setMenu($('.menu-toggle').getAttribute('aria-expanded') !== 'true'));
-$$('#main-nav a').forEach(link => link.addEventListener('click', () => setMenu(false)));
 document.addEventListener('keydown', event => { if (event.key === 'Escape') setMenu(false); });
 
-// 滚动时高亮当前分区对应的导航。
-const navLinks = $$('#main-nav a');
-const navObserver = new IntersectionObserver(entries => {
-  entries.forEach(entry => {
-    if (!entry.isIntersecting) return;
-    navLinks.forEach(link => link.toggleAttribute('aria-current', link.hash === `#${entry.target.id}`));
-  });
-}, { rootMargin:'-45% 0px -50% 0px' });
-navLinks.forEach(link => { const target = $(link.hash); if (target) navObserver.observe(target); });
-navObserver.observe($('#home'));
-
-// ─────────────────────────────────────────────────────────────
-//  渲染内容
-// ─────────────────────────────────────────────────────────────
-
-$('#crafts').innerHTML = crafts.map(craft => `
-  <li class="craft">
-    <span class="craft-icon">${pixelSVG(icons[craft.icon], ink)}</span>
-    <div><h3><span>${esc(craft.title)}</span><i>${esc(craft.en)}</i></h3><p>${esc(craft.text)}</p></div>
-  </li>`).join('');
-
-$('#waybill').innerHTML = waybill.map(([key, value]) => `<div><dt>${esc(key)}</dt><dd${value === '待公布' ? ' class="pending"' : ''}>${esc(value)}</dd></div>`).join('');
-
-$('#tracking-steps').innerHTML = tracking.steps.map((step, i) => {
-  const state = i < tracking.current ? 'done' : i === tracking.current ? 'current' : 'todo';
-  return `<li class="step is-${state}"${state === 'current' ? ' aria-current="step"' : ''}><span class="step-dot" aria-hidden="true"></span><b>${esc(step.label)}</b><span>${esc(step.note)}</span></li>`;
-}).join('');
-$('#tracking-steps').style.setProperty('--done', tracking.current / (tracking.steps.length - 1));
-
-$('#stamp-grid').innerHTML = archive.map((work, i) => {
-  const art = work.image
-    ? `<img src="${esc(work.image)}" alt="" loading="lazy">`
-    : sceneSVG(work.scene);
-  const tag = work.href ? 'a' : 'article';
-  const link = work.href ? ` href="${esc(work.href)}" target="_blank" rel="noopener noreferrer"` : '';
-  return `<${tag} class="stamp${work.image ? ' has-photo' : ''}"${link} style="--tilt:${[-2, 1.5, -1, 2][i % 4]}deg" data-reveal>
-    <div class="stamp-paper perf">
-      <div class="stamp-art">${art}<span class="stamp-no">No.${esc(work.no)}</span></div>
-      <div class="stamp-info"><h3>${esc(work.title)}</h3><p>${esc(work.meta)}</p></div>
-    </div>
-    <span class="postmark-slot" data-postmark="${esc(work.status)}" data-postmark-color="${work.status === '派送中' ? '#B4443A' : '#595F91'}"></span>
-    ${work.sample ? '<span class="sample-tag">示例</span>' : ''}
-  </${tag}>`;
-}).join('');
-
-$('#crew-grid').innerHTML = crew.map(member => {
-  const palette = { S:'#F2C9A9', M:'#C98A72', W:'#FFFFFF', '.':'#D7D3E2', ...member.colors };
-  const bars = [...member.id + member.name].map(ch => ch.charCodeAt(0) % 3 + 1);
-  return `<li class="crew-card" data-reveal>
-    <div class="crew-top"><span>寄语邮政 · 邮差证</span><span>No.${esc(member.id)}</span></div>
-    <div class="crew-body">
-      <span class="crew-face">${pixelSVG(member.face, palette)}</span>
-      <div><h3>${esc(member.name)}</h3><p class="crew-role">${esc(member.role)}</p><p class="crew-line">${esc(member.line)}</p></div>
-    </div>
-    <div class="crew-foot"><span class="barcode" aria-hidden="true">${bars.map(w => `<i style="width:${w * 2}px"></i>`).join('')}</span><span>COURIER</span></div>
-  </li>`;
-}).join('');
-if (crew.some(member => member.sample)) $('#crew-note').innerHTML = '<span class="sample-tag inline">示例</span> 名册为占位数据，在 <code>app.js</code> 的 crew 里换成真实成员。';
-else $('#crew-note').textContent = '每一封信背后，都有人在认真地写。';
-
-$('#routes').innerHTML = routes.map(route => `
-  <li class="route"><span class="route-code">${esc(route.code)}</span><div><h3>${esc(route.role)}</h3><p>${esc(route.text)}</p></div><span class="route-stub" aria-hidden="true">线路</span></li>`).join('');
-
-$$('.postmark-slot').forEach(slot => {
-  slot.classList.add('postmark');
-  slot.style.setProperty('--pm', slot.dataset.postmarkColor);
-  slot.innerHTML = `${postmarkSVG()}<span class="postmark-text"><small>COURIERS</small><b>${esc(slot.dataset.postmark)}</b><small>2026</small></span>`;
-});
-
-$('#mailbox-art').innerHTML = pixelSVG(mailboxArt, ink);
-
-// ─────────────────────────────────────────────────────────────
-//  出现动画与信封
-// ─────────────────────────────────────────────────────────────
-
-document.documentElement.classList.add('js');
-const revealObserver = new IntersectionObserver(entries => {
-  entries.forEach(entry => {
-    if (!entry.isIntersecting) return;
-    entry.target.classList.add('is-in');
-    revealObserver.unobserve(entry.target);
-  });
-}, { threshold:.18 });
-$$('[data-reveal]').forEach(el => revealObserver.observe(el));
-
-const envelope = $('#envelope');
-new IntersectionObserver((entries, observer) => {
-  if (entries.some(entry => entry.isIntersecting)) { envelope.classList.add('is-open'); observer.disconnect(); }
-}, { threshold:.35 }).observe(envelope);
-
-// 信封口袋的 V 形开口与背后的翻盖，都按当前宽度画成像素台阶。
-function drawEnvelope() {
-  const pocket = $('.pocket-shape'), back = $('.envelope-back');
-  const w = pocket.clientWidth, h = pocket.clientHeight, v = Math.round(h * .5 / 4) * 4, step = w > 600 ? 16 : 8;
-  pocket.style.clipPath = `polygon(${['0px 0px', ...stairs(0, 0, w / 2, v, step), ...stairs(w / 2, v, w, 0, step), `${w}px ${h}px`, `0px ${h}px`].join(',')})`;
-  const bw = back.clientWidth, flap = Math.round(bw * .26 / 4) * 4;
-  back.style.setProperty('--flap', `${flap}px`);
-  back.style.setProperty('--flap-path', `polygon(${['0px ' + flap + 'px', ...stairs(0, flap, bw / 2, 0, step), ...stairs(bw / 2, 0, bw, flap, step), `${bw}px ${flap}px`].join(',')})`);
-}
-drawEnvelope();
-new ResizeObserver(drawEnvelope).observe(envelope);
-
-// ─────────────────────────────────────────────────────────────
-//  音符盒：用 Web Audio 合成，不加载任何音频文件。
-// ─────────────────────────────────────────────────────────────
-
-const scale = [
-  ['Do', 523.25], ['Re', 587.33], ['Mi', 659.25], ['Fa', 698.46],
-  ['Sol', 783.99], ['La', 880.00], ['Si', 987.77], ['Do', 1046.50],
-];
-const drift = [1, -1, 1, 1, -1, 1, -1, -1];
-const sparkColors = ['#E8B04A', '#F08DA6', '#929FD8', '#7FD3A6', '#F6F3F6'];
-let audio;
-function tone(freq) {
+// 音符盒 ──────────────────────────────────────────────────────
+const NOTE = { C:0, D:2, E:4, F:5, G:7, A:9, B:11 };
+const freq = name => 440 * 2 ** ((NOTE[name[0]] + (Number(name[1]) + 1) * 12 - 69) / 12);
+let audio, step = 0;
+function tone(f) {
   audio ??= new (window.AudioContext || window.webkitAudioContext)();
   if (audio.state === 'suspended') audio.resume();
   const t = audio.currentTime, out = audio.createGain();
@@ -401,46 +443,40 @@ function tone(freq) {
   out.gain.exponentialRampToValueAtTime(.0001, t + .9);
   [['triangle', 1, 1], ['sine', 2, .3], ['square', 1, .03]].forEach(([type, mult, level]) => {
     const osc = audio.createOscillator(), gain = audio.createGain();
-    osc.type = type; osc.frequency.value = freq * mult; gain.gain.value = level;
+    osc.type = type; osc.frequency.value = f * mult; gain.gain.value = level;
     osc.connect(gain).connect(out); osc.start(t); osc.stop(t + 1);
   });
 }
-const row = $('#noteblock-row');
-row.innerHTML = scale.map(([name], i) => `<button class="noteblock" data-i="${i}" style="--drift:${drift[i]}" aria-label="音符 ${name}${i === 7 ? '（高音）' : ''}"><span class="nb-label">${name}</span></button>`).join('');
-row.addEventListener('click', event => {
-  const block = event.target.closest('.noteblock');
-  if (!block) return;
-  const i = Number(block.dataset.i), shifted = row.classList.contains('is-shifted');
-  tone(scale[i][1] * (shifted ? 2 ** (drift[i] / 12) : 1));
+$('#noteblock').addEventListener('click', event => {
+  const note = melody[step % melody.length], off = note.endsWith('*');
+  tone(freq(note) * (off ? 2 ** (1 / 12) : 1));
+  step++;
+  const block = event.currentTarget;
   block.classList.remove('is-hit'); void block.offsetWidth; block.classList.add('is-hit');
   if (reducedMotion.matches) return;
   const spark = document.createElement('span');
-  spark.className = 'note-spark';
+  spark.className = `note-spark${off ? ' is-off' : ''}`;
   spark.textContent = '♪';
-  spark.style.color = sparkColors[(i + (shifted ? 2 : 0)) % sparkColors.length];
-  spark.style.left = `${block.offsetLeft + block.offsetWidth / 2 + (shifted ? drift[i] * 18 : 0)}px`;
+  spark.style.color = ['#E8B04A', '#F08DA6', '#929FD8', '#7FD3A6'][step % 4];
   spark.addEventListener('animationend', () => spark.remove());
-  row.append(spark);
-});
-$('#shift-toggle').addEventListener('click', event => {
-  const on = event.currentTarget.getAttribute('aria-pressed') !== 'true';
-  event.currentTarget.setAttribute('aria-pressed', on);
-  row.classList.toggle('is-shifted', on);
+  block.append(spark);
 });
 
-// ─────────────────────────────────────────────────────────────
-//  页脚信箱
-// ─────────────────────────────────────────────────────────────
-
-let lastNote = -1, noteTimer;
-$('#mailbox').addEventListener('click', () => {
-  let i;
-  do { i = Math.floor(Math.random() * mailNotes.length); } while (i === lastNote && mailNotes.length > 1);
-  lastNote = i;
-  const note = $('#mail-note');
-  note.textContent = mailNotes[i];
-  note.classList.remove('is-shown'); void note.offsetWidth; note.classList.add('is-shown');
-  $('#mailbox').classList.remove('is-shaking'); void $('#mailbox').offsetWidth; $('#mailbox').classList.add('is-shaking');
-  clearTimeout(noteTimer);
-  noteTimer = setTimeout(() => note.classList.remove('is-shown'), 4200);
+// 进场：幕布拉开 ──────────────────────────────────────────────
+const theater = $('#theater-dialog');
+let theaterTrigger;
+$('#enter-theater').addEventListener('click', event => {
+  theaterTrigger = event.currentTarget;
+  document.body.classList.add('modal-open');
+  theater.showModal();
+  requestAnimationFrame(() => requestAnimationFrame(() => theater.classList.add('is-open')));
 });
+$('#theater-close').addEventListener('click', () => theater.close());
+theater.addEventListener('close', () => {
+  theater.classList.remove('is-open');
+  document.body.classList.remove('modal-open');
+  theaterTrigger?.focus({ preventScroll:true });
+});
+
+document.documentElement.classList.add('js');
+layout();
