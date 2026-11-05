@@ -27,4 +27,4 @@ http.createServer(async (request, response) => {
       if (request.method === 'HEAD') response.end(); else createReadStream(file).pipe(response);
     }
   } catch { response.writeHead(404).end('Not found'); }
-}).listen(port, '127.0.0.1', () => console.log(`Eastward preview: http://localhost:${port}`));
+}).listen(port, '127.0.0.1', () => console.log(`Couriers preview: http://localhost:${port}`));

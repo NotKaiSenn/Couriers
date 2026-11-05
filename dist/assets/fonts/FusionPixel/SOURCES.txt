@@ -1,0 +1,5 @@
+Fusion Pixel Font 12px Proportional SC (缝合像素字体)
+Author: TakWolf — https://github.com/TakWolf/fusion-pixel-font
+Package: @fontsource/fusion-pixel-12px-proportional-sc@5.3.0 (npm)
+License: SIL Open Font License 1.1 — see OFL.txt
+This copy is subset to ASCII, GB2312 symbols and the 6,763 GB2312 hanzi plus a few arrows and notes.

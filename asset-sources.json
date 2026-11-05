@@ -1,185 +1,5 @@
 [
   {
-    "source": "https://eastwardgame.com/wp-content/themes/eastward/fonts/TTNormsProBd/font.woff2",
-    "file": "assets/fonts/TTNormsProBd/font.woff2",
-    "bytes": 83896
-  },
-  {
-    "source": "https://eastwardgame.com/wp-content/themes/eastward/fonts/TTNormsProNormal/font.woff2",
-    "file": "assets/fonts/TTNormsProNormal/font.woff2",
-    "bytes": 82900
-  },
-  {
-    "source": "https://eastwardgame.com/wp-content/themes/eastward/fonts/TTNormsProXBd/font.woff2",
-    "file": "assets/fonts/TTNormsProXBd/font.woff2",
-    "bytes": 81380
-  },
-  {
-    "source": "https://eastwardgame.com/wp-content/themes/eastward/img/big-smoke.jpg",
-    "file": "assets/img/big-smoke.jpg",
-    "bytes": 56480
-  },
-  {
-    "source": "https://eastwardgame.com/wp-content/themes/eastward/img/building-fragment.png",
-    "file": "assets/img/building-fragment.png",
-    "bytes": 31969
-  },
-  {
-    "source": "https://eastwardgame.com/wp-content/themes/eastward/img/characters/alva.png",
-    "file": "assets/img/characters/alva.png",
-    "bytes": 11704
-  },
-  {
-    "source": "https://eastwardgame.com/wp-content/themes/eastward/img/characters/alva_2.png",
-    "file": "assets/img/characters/alva_2.png",
-    "bytes": 12123
-  },
-  {
-    "source": "https://eastwardgame.com/wp-content/themes/eastward/img/characters/john.png",
-    "file": "assets/img/characters/john.png",
-    "bytes": 14981
-  },
-  {
-    "source": "https://eastwardgame.com/wp-content/themes/eastward/img/characters/john_2.png",
-    "file": "assets/img/characters/john_2.png",
-    "bytes": 12907
-  },
-  {
-    "source": "https://eastwardgame.com/wp-content/themes/eastward/img/characters/sam.png",
-    "file": "assets/img/characters/sam.png",
-    "bytes": 11510
-  },
-  {
-    "source": "https://eastwardgame.com/wp-content/themes/eastward/img/characters/sam_2.png",
-    "file": "assets/img/characters/sam_2.png",
-    "bytes": 12197
-  },
-  {
-    "source": "https://eastwardgame.com/wp-content/themes/eastward/img/characters/solomon.png",
-    "file": "assets/img/characters/solomon.png",
-    "bytes": 10404
-  },
-  {
-    "source": "https://eastwardgame.com/wp-content/themes/eastward/img/characters/solomon_2.png",
-    "file": "assets/img/characters/solomon_2.png",
-    "bytes": 10242
-  },
-  {
-    "source": "https://eastwardgame.com/wp-content/themes/eastward/img/eastward-game-artwork-background.webp",
-    "file": "assets/img/eastward-game-artwork-background.webp",
-    "bytes": 581504
-  },
-  {
-    "source": "https://eastwardgame.com/wp-content/themes/eastward/img/eastward-tower.png",
-    "file": "assets/img/eastward-tower.png",
-    "bytes": 69545
-  },
-  {
-    "source": "https://eastwardgame.com/wp-content/themes/eastward/img/eastward-video-background.jpg",
-    "file": "assets/img/eastward-video-background.jpg",
-    "bytes": 90886
-  },
-  {
-    "source": "https://eastwardgame.com/wp-content/themes/eastward/img/gachapon/monsters/earthborn-big.png",
-    "file": "assets/img/gachapon/monsters/earthborn-big.png",
-    "bytes": 2903
-  },
-  {
-    "source": "https://eastwardgame.com/wp-content/themes/eastward/img/gachapon/monsters/monster-2.png",
-    "file": "assets/img/gachapon/monsters/monster-2.png",
-    "bytes": 21487
-  },
-  {
-    "source": "https://eastwardgame.com/wp-content/themes/eastward/img/gachapon/monsters/monster-3.png",
-    "file": "assets/img/gachapon/monsters/monster-3.png",
-    "bytes": 21233
-  },
-  {
-    "source": "https://eastwardgame.com/wp-content/themes/eastward/img/gachapon/monsters/monster-4.png",
-    "file": "assets/img/gachapon/monsters/monster-4.png",
-    "bytes": 21769
-  },
-  {
-    "source": "https://eastwardgame.com/wp-content/themes/eastward/img/gachapon/monsters/monster-5.png",
-    "file": "assets/img/gachapon/monsters/monster-5.png",
-    "bytes": 22428
-  },
-  {
-    "source": "https://eastwardgame.com/wp-content/themes/eastward/img/home-features-bg.jpg",
-    "file": "assets/img/home-features-bg.jpg",
-    "bytes": 21681
-  },
-  {
-    "source": "https://eastwardgame.com/wp-content/themes/eastward/img/jasper.png",
-    "file": "assets/img/jasper.png",
-    "bytes": 6869
-  },
-  {
-    "source": "https://eastwardgame.com/wp-content/themes/eastward/img/logos/chucklefish.png",
-    "file": "assets/img/logos/chucklefish.png",
-    "bytes": 8850
-  },
-  {
-    "source": "https://eastwardgame.com/wp-content/themes/eastward/img/logos/pixpil.png",
-    "file": "assets/img/logos/pixpil.png",
-    "bytes": 13896
-  },
-  {
-    "source": "https://eastwardgame.com/wp-content/themes/eastward/img/logos/xd.png",
-    "file": "assets/img/logos/xd.png",
-    "bytes": 6858
-  },
-  {
-    "source": "https://eastwardgame.com/wp-content/themes/eastward/img/mini-gacha.png",
-    "file": "assets/img/mini-gacha.png",
-    "bytes": 5195
-  },
-  {
-    "source": "https://eastwardgame.com/wp-content/themes/eastward/img/smoke-1-cropped.jpg",
-    "file": "assets/img/smoke-1-cropped.jpg",
-    "bytes": 80887
-  },
-  {
-    "source": "https://eastwardgame.com/wp-content/themes/eastward/img/textures/character-window.png",
-    "file": "assets/img/textures/character-window.png",
-    "bytes": 72592
-  },
-  {
-    "source": "https://eastwardgame.com/wp-content/themes/eastward/img/textures/footer-texture.png",
-    "file": "assets/img/textures/footer-texture.png",
-    "bytes": 18747
-  },
-  {
-    "source": "https://eastwardgame.com/wp-content/themes/eastward/img/textures/home-quotes.png",
-    "file": "assets/img/textures/home-quotes.png",
-    "bytes": 33346
-  },
-  {
-    "source": "https://eastwardgame.com/wp-content/uploads/2023/10/f1-travel-the-world.jpg",
-    "file": "assets/screenshots/f1-travel-the-world.jpg",
-    "bytes": 219123
-  },
-  {
-    "source": "https://eastwardgame.com/wp-content/uploads/2023/10/f2-fight-or-fry.jpg",
-    "file": "assets/screenshots/f2-fight-or-fry.jpg",
-    "bytes": 225793
-  },
-  {
-    "source": "https://eastwardgame.com/wp-content/uploads/2023/10/f3-mix-things-up.jpg",
-    "file": "assets/screenshots/f3-mix-things-up.jpg",
-    "bytes": 210721
-  },
-  {
-    "source": "https://eastwardgame.com/wp-content/uploads/2023/10/f4-small-town-life.jpg",
-    "file": "assets/screenshots/f4-small-town-life.jpg",
-    "bytes": 208754
-  },
-  {
-    "source": "https://eastwardgame.com/wp-content/uploads/2023/10/f5-alfresco-dining.jpg",
-    "file": "assets/screenshots/f5-alfresco-dining.jpg",
-    "bytes": 216639
-  },
-  {
     "file": "assets/img/cmyz-hero-background-v2.png",
     "source": "Project artwork supplied or locally adapted for Couriers"
   },
@@ -192,7 +12,33 @@
     "source": "Project artwork supplied or locally adapted for Couriers"
   },
   {
+    "file": "assets/img/envelope.svg",
+    "source": "Envelope mark extracted from couriers-bilingual-horizontal.svg (used as favicon and letter stamp)"
+  },
+  {
     "file": "assets/img/trailer.png",
     "source": "Project artwork supplied or locally adapted for Couriers"
+  },
+  {
+    "file": "assets/img/minecraft/music-disc-blocks.png",
+    "source": "https://raw.githubusercontent.com/InventivetalentDev/minecraft-assets/1.21/assets/minecraft/textures/item/music_disc_blocks.png",
+    "note": "Original game artwork: Mojang"
+  },
+  {
+    "file": "assets/fonts/FusionPixel/fusion-pixel-12px-sc.woff2",
+    "source": "npm @fontsource/fusion-pixel-12px-proportional-sc@5.3.0 (Fusion Pixel Font by TakWolf)",
+    "license": "SIL Open Font License 1.1 (assets/fonts/FusionPixel/OFL.txt)",
+    "note": "Subset to ASCII, GB2312 symbols and the 6,763 GB2312 hanzi",
+    "bytes": 194108
+  },
+  {
+    "file": "assets/icons/bilibili.svg",
+    "source": "Remix Icon — icons/Logos/bilibili-fill.svg",
+    "license": "assets/icons/LICENSE-RemixIcon.txt"
+  },
+  {
+    "file": "assets/icons/qq.svg",
+    "source": "Remix Icon — icons/Logos/qq-fill.svg",
+    "license": "assets/icons/LICENSE-RemixIcon.txt"
   }
 ]
