@@ -14,7 +14,17 @@ const works = [
 ];
 const statusText = { live:'现已公开', wip:'制作中', hidden:'未公开' };
 
-// 成员（示例）。face 是 8×8 像素头像，字母对应 colors；facts 是右侧的小档案。
+// 成员（示例）。
+// 立绘：有正式立绘时填 art:{ idle:'站立图', action:'选中时的动作图' }（建议透明底 PNG，人物脚底对齐）；
+// 没填就用 face（8×8 头像）+ outfit 生成一个方块小人，prop 是选中时拿出来的道具。
+const outfits = [
+  { shirt:'#3B3856', pants:'#2A2838', shoes:'#1A1826', accent:'#929FD8', prop:'envelope' },
+  { shirt:'#C0703A', pants:'#4A3A30', shoes:'#2A201A', accent:'#E8B04A', prop:'block' },
+  { shirt:'#3E5C4E', pants:'#2A2838', shoes:'#1A1826', accent:'#7FD3A6', prop:'terminal' },
+  { shirt:'#F2E6D0', pants:'#5E3A44', shoes:'#2A1A20', accent:'#B4443A', prop:'brush' },
+  { shirt:'#595F91', pants:'#302D41', shoes:'#1A1826', accent:'#E9E4EE', prop:'note' },
+  { shirt:'#E8D3DC', pants:'#4A3A5E', shoes:'#2A2238', accent:'#E59AB0', prop:'book' },
+];
 const crew = [
   { name:'成员 01', role:'策划', bio:'把一个模糊的念头，整理成可以开工的方案。每一封信从哪里开始写，通常是从这里。', facts:[['擅长', '世界观、流程设计'], ['喜欢', '凌晨的灵感'], ['不喜欢', '改第十版需求']],
     face:['HHHHHHHH','HHHHHHHH','HSSHHSSH','SSSSSSSS','GWEGGEWG','SSSSSSSS','SSSMMSSS','SSSSSSSS'], colors:{ H:'#302D41', E:'#595F91', G:'#302D41' } },
@@ -286,55 +296,130 @@ $$('.work-row').forEach(row => {
   row.addEventListener('pointerleave', () => { pv.on = false; preview.classList.remove('is-on'); clearInterval(noiseTimer); });
 });
 
-// 成员：点头像切换，大头像逐格替换成新的那位 ─────────────────
-const crewTabs = $('#crew-tabs'), crewPanel = $('#crew-panel'), crewBig = $('#crew-big');
-crewTabs.innerHTML = crew.map((member, i) => `
-  <button class="crew-tab" id="crew-tab-${i}" role="tab" aria-controls="crew-panel" aria-selected="false" tabindex="-1">
-    <canvas width="8" height="8" aria-hidden="true"></canvas><span>${esc(member.name)}</span><small>${esc(member.role)}</small>
+// 成员：立绘并排站在窗里，点谁谁换动作，下方介绍跟着替换 ───
+const mix = (a, b, t) => {
+  const pa = a.match(/\w\w/g).map(h => parseInt(h, 16)), pb = b.match(/\w\w/g).map(h => parseInt(h, 16));
+  return '#' + pa.map((v, i) => Math.round(v + (pb[i] - v) * t).toString(16).padStart(2, '0')).join('');
+};
+const shade = (hex, amt) => mix(hex, amt > 0 ? '#FFFFFF' : '#000000', Math.abs(amt));
+const props = {
+  envelope:{ rows:['LLLLLL','LBLLBL','LLBBLL','LLLLLL'], pal:{ L:'#F6F3F6', B:'#595F91' } },
+  block:{ rows:['GGGGG','GgGgG','DDDDD','DdDdD','DDDDD'], pal:{ G:'#6F9C6A', g:'#5B8A5E', D:'#7C5846', d:'#5A3D30' } },
+  terminal:{ rows:['KKKKKK','KGKKKK','KKGKKK','KGKKKK','KKKGGK','KKKKKK'], pal:{ K:'#1A1826', G:'#7FD3A6' } },
+  brush:{ rows:['RR','RR','WW','ww','ww','ww','ww'], pal:{ R:'#B4443A', W:'#D7D3E2', w:'#8A5A35' } },
+  note:{ rows:['..KKK','..K.K','..K..','..K..','KKK..','KKK..'], pal:{ K:'#302D41' } },
+  book:{ rows:['RRRRR','RWWWR','RWLWR','RWWWR','RRRRR'], pal:{ R:'#B4443A', W:'#F6F3F6', L:'#929FD8' } },
+};
+// 方块小人：头 8×8、身体 8×12、手脚各 4×12，和 Minecraft 皮肤的比例一样。
+const FW = 22, FH = 37;
+function drawFigure(canvas, member, outfit, pose) {
+  canvas.width = FW; canvas.height = FH;
+  const ctx = canvas.getContext('2d'), ox = 3, oy = 5, skin = '#F2C9A9';
+  const px = (x, y, w, h, c) => { ctx.fillStyle = c; ctx.fillRect(x, y, w, h); };
+  ctx.clearRect(0, 0, FW, FH);
+  px(ox + 4, oy + 20, 4, 10, outfit.pants); px(ox + 8, oy + 20, 4, 10, shade(outfit.pants, -.18));
+  px(ox + 4, oy + 30, 4, 2, outfit.shoes); px(ox + 8, oy + 30, 4, 2, shade(outfit.shoes, .1));
+  px(ox + 4, oy + 8, 8, 12, outfit.shirt); px(ox + 11, oy + 8, 1, 12, shade(outfit.shirt, -.16));
+  px(ox + 6, oy + 8, 4, 1, '#D6A588'); px(ox + 9, oy + 11, 2, 2, outfit.accent); px(ox + 4, oy + 19, 8, 1, shade(outfit.pants, -.35));
+  const armDown = x => { px(x, oy + 8, 4, 10, outfit.shirt); px(x + 3, oy + 8, 1, 10, shade(outfit.shirt, -.16)); px(x, oy + 18, 4, 2, skin); };
+  armDown(ox);
+  if (pose === 'action') { px(ox + 12, oy - 4, 4, 2, skin); px(ox + 12, oy - 2, 4, 10, outfit.shirt); px(ox + 15, oy - 2, 1, 10, shade(outfit.shirt, -.16)); }
+  else armDown(ox + 12);
+  const pal = { S:skin, M:'#C98A72', W:'#FFFFFF', '.':shade(member.colors.H || '#302D41', 0), ...member.colors };
+  member.face.forEach((row, y) => [...row].forEach((ch, x) => ch !== '.' && px(ox + 4 + x, oy + y, 1, 1, x === 7 ? shade(pal[ch] || skin, -.12) : (pal[ch] || skin))));
+  if (pose === 'action') {
+    const prop = props[outfit.prop];
+    prop.rows.forEach((row, y) => [...row].forEach((ch, x) => { if (prop.pal[ch]) px(ox - 2 + x, oy + 15 + y, 1, 1, prop.pal[ch]); }));
+  }
+}
+const castFigures = $('#cast-figures'), castCard = $('#cast-card');
+castFigures.innerHTML = crew.map((member, i) => `
+  <button class="figure" id="figure-${i}" role="tab" aria-controls="cast-card" aria-selected="false" tabindex="-1" data-cursor="${esc(member.name)}">
+    ${member.art ? `<img src="${esc(member.art.idle)}" alt="" aria-hidden="true">` : '<canvas aria-hidden="true"></canvas>'}
+    <span class="sr-only">${esc(member.name)} · ${esc(member.role)}</span>
   </button>`).join('');
-$$('.crew-tab').forEach((tab, i) => paintFace(tab.querySelector('canvas'), crew[i]));
-const bigCtx = crewBig.getContext('2d');
-let crewIndex = -1, swapTimer;
+function setPose(i, pose) {
+  const fig = $(`#figure-${i}`), member = crew[i];
+  if (member.art) fig.querySelector('img').src = member.art[pose];
+  else drawFigure(fig.querySelector('canvas'), member, outfits[i % outfits.length], pose);
+}
+let crewIndex = -1;
 function selectCrew(index, focus = false) {
   if (index === crewIndex) return;
+  const prev = crewIndex;
   crewIndex = index;
+  if (prev >= 0) setPose(prev, 'idle');
+  setPose(index, 'action');
+  $$('.figure').forEach((fig, i) => { fig.setAttribute('aria-selected', i === index); fig.tabIndex = i === index ? 0 : -1; });
+  const fig = $(`#figure-${index}`);
+  fig.classList.remove('is-acting'); void fig.offsetWidth; fig.classList.add('is-acting');
+  if (focus) fig.focus();
   const member = crew[index];
-  $$('.crew-tab').forEach((tab, i) => { tab.setAttribute('aria-selected', i === index); tab.tabIndex = i === index ? 0 : -1; });
-  if (focus) $(`#crew-tab-${index}`).focus();
-  crewPanel.setAttribute('aria-labelledby', `crew-tab-${index}`);
-  crewPanel.innerHTML = `
-    <p class="label">No.${String(index + 1).padStart(2, '0')} · ${esc(member.role)}</p>
-    <h3 class="crew-name">${esc(member.name)}</h3>
-    <p class="crew-bio">${esc(member.bio)}</p>
-    <dl class="crew-facts">${member.facts.map(([k, v]) => `<div><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join('')}</dl>`;
-  crewPanel.classList.remove('is-swapping'); void crewPanel.offsetWidth; crewPanel.classList.add('is-swapping');
-  $('#crew-badge').textContent = `No.${String(index + 1).padStart(2, '0')}`;
-  // 新头像的 64 个像素按随机顺序一格格换上去
-  const next = document.createElement('canvas');
-  paintFace(next, member);
-  const pixels = Array.from({ length:64 }, (_, k) => k).sort(() => Math.random() - .5);
-  clearInterval(swapTimer);
-  if (reducedMotion.matches) { bigCtx.drawImage(next, 0, 0); return; }
-  let k = 0;
-  swapTimer = setInterval(() => {
-    for (let n = 0; n < 6 && k < 64; n++, k++) { const p = pixels[k]; bigCtx.drawImage(next, p % 8, p >> 3, 1, 1, p % 8, p >> 3, 1, 1); }
-    if (k >= 64) clearInterval(swapTimer);
-  }, 22);
+  castCard.setAttribute('aria-labelledby', `figure-${index}`);
+  castCard.innerHTML = `
+    <div class="cast-main">
+      <p class="label on-dark">No.${String(index + 1).padStart(2, '0')} · ${esc(member.role)}</p>
+      <h3 class="cast-name">${esc(member.name)}</h3>
+      <p class="cast-bio">${esc(member.bio)}</p>
+    </div>
+    <dl class="cast-facts">${member.facts.map(([k, v]) => `<div><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join('')}</dl>`;
+  castCard.classList.remove('is-swapping'); void castCard.offsetWidth; castCard.classList.add('is-swapping');
 }
-$$('.crew-tab').forEach((tab, i) => {
-  tab.addEventListener('click', () => selectCrew(i));
-  tab.addEventListener('keydown', event => {
+crew.forEach((_, i) => setPose(i, 'idle'));
+$$('.figure').forEach((fig, i) => {
+  fig.addEventListener('click', () => selectCrew(i));
+  fig.addEventListener('keydown', event => {
     const keys = { ArrowRight:i + 1, ArrowDown:i + 1, ArrowLeft:i - 1, ArrowUp:i - 1, Home:0, End:crew.length - 1 };
     if (!(event.key in keys)) return;
     event.preventDefault();
     selectCrew((keys[event.key] + crew.length) % crew.length, true);
   });
 });
-paintFace(crewBig, crew[0]);
 selectCrew(0);
 $('#crew-note').innerHTML = crewIsSample
-  ? '<em class="sample">示例</em> 名单为占位数据，在 <code>app.js</code> 的 crew 里换成真实成员。'
-  : '点头像，认识一下每一位邮差。';
+  ? '<em class="sample">示例</em> 立绘和名单都是占位，在 <code>app.js</code> 的 crew 里换成真实成员。'
+  : '点一位邮差，看看他们在忙什么。';
+
+// 窗口：一块边缘碎成像素的椭圆，像 Eastward 那扇手绘的窗，只是换成了方块。
+function drawCastBg() {
+  const c = $('#cast-bg'), b = 8;
+  const w = Math.max(1, Math.ceil(c.clientWidth / b)), h = Math.max(1, Math.ceil(c.clientHeight / b));
+  c.width = w; c.height = h;
+  const ctx = c.getContext('2d'), rnd = seeded(5);
+  const wobble = Array.from({ length:5 }, (_, k) => [.01 + rnd() * .022, rnd() * 6.28, k + 2]);
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+    const nx = (x + .5) / w * 2 - 1, ny = (y + .5) / h * 2 - 1, a = Math.atan2(ny, nx);
+    const r = .97 + wobble.reduce((s, [amp, ph, k]) => s + amp * Math.sin(k * a + ph), 0);
+    const d = Math.hypot(nx, ny) / r;
+    if (d < .92 || (d < 1 && (bayer8[y % 8][x % 8] + .5) / 64 > (d - .92) / .08)) {
+      ctx.fillStyle = d < .86 ? '#F1EEE9' : (x + y) % 3 ? '#E6E2DC' : '#F1EEE9';
+      ctx.fillRect(x, y, 1, 1);
+    }
+  }
+}
+drawCastBg();
+
+// 关于区右侧的「烟」：几团柔和的形状，用 Bayer 抖动压成三档像素色。
+function drawSmoke() {
+  const c = $('#about-smoke'), b = 6;
+  const w = Math.max(1, Math.ceil(c.clientWidth / b)), h = Math.max(1, Math.ceil(c.clientHeight / b));
+  c.width = w; c.height = h;
+  const ctx = c.getContext('2d'), aspect = w / h;
+  const blobs = [[.66, .3, .18], [.8, .45, .24], [.95, .2, .2], [.72, .76, .2], [.9, .84, .22], [.56, .6, .12], [.86, .64, .18], [.62, .12, .12]];
+  const tones = ['#2A2238', '#352B47', '#41365A'];
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+    const nx = x / w, ny = y / h;
+    let dens = 0;
+    for (const [bx, by, br] of blobs) dens = Math.max(dens, 1 - Math.hypot((nx - bx) * aspect, ny - by) / (br * aspect * .62));
+    if (dens <= 0) continue;
+    const t = (bayer8[y % 8][x % 8] + .5) / 64;
+    const level = Math.min(2, Math.floor(dens * 3 + t - .5));
+    if (level < 0) continue;
+    ctx.fillStyle = tones[level];
+    ctx.fillRect(x, y, 1, 1);
+  }
+}
+drawSmoke();
 
 // 招募字幕 ────────────────────────────────────────────────────
 const marqueeItems = roles.map(role => `<span>${esc(role)}</span><i></i>`).join('');
@@ -346,7 +431,7 @@ addEventListener('resize', () => {
   clearTimeout(resizeTimer);
   resizeTimer = setTimeout(() => {
     if (heroImg && hero.classList.contains('is-ready')) { drawBlocks(heroCanvas, heroImg, heroOpts); cacheHero(); drawHero(); }
-    drawRedactions();
+    drawRedactions(); drawCastBg(); drawSmoke();
   }, 150);
 });
 
@@ -354,11 +439,11 @@ addEventListener('resize', () => {
 const revealer = new IntersectionObserver(entries => entries.forEach(entry => {
   if (entry.isIntersecting) { entry.target.classList.add('is-in'); revealer.unobserve(entry.target); }
 }), { threshold:.2 });
-$$('[data-reveal], .work-row, .sec-head, .crew-stage').forEach(el => revealer.observe(el));
+$$('[data-reveal], .work-row, .sec-head, .cast, .pair-art').forEach(el => revealer.observe(el));
 
 // 滚动：页眉状态 + 主视觉视差 ────────────────────────────────
 const hdr = $('#hdr');
-const lightSections = $$('.about, .crew, .join');
+const lightSections = $$('.works, .join');
 let ticking = false;
 function onScroll() {
   ticking = false;

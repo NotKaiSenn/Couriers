@@ -58,54 +58,58 @@
       </div>
     </section>
 
-    <div class="dither" data-from="#121118" data-to="#F4F2F4" aria-hidden="true"></div>
-
-    <!-- 关于 -->
+    <!-- 关于：左边插图、右边文字，紧挨成一组；背景左右两色，右侧铺一团抖动像素的「烟」 -->
     <section class="about" id="about" aria-labelledby="about-title">
-      <div class="col">
-        <p class="label">(01) 关于寄语</p>
-        <h2 class="statement" id="about-title" data-reveal>寄语是一群<br>用<span class="px-word">方块</span>写信的人。</h2>
-        <p class="statement-sub" data-reveal>我们做 Minecraft 地图：搭场景<sup>BUILD</sup>、写机制<sup>LOGIC</sup>、讲故事<sup>STORY</sup>、配旋律<sup>SOUND</sup>——再把它们仔细封好，寄给屏幕前的你。</p>
-        <p class="about-note" data-reveal><img src="./assets/img/envelope.svg" alt="" width="36" height="30">“寄语”是托付出去的话。每一张地图，都是一封信。</p>
+      <canvas class="about-smoke" id="about-smoke" aria-hidden="true"></canvas>
+      <div class="pair">
+        <div class="pair-art about-art" aria-hidden="true">
+          <img src="./assets/img/envelope.svg" alt="" width="48" height="40">
+          <i></i><i></i><i></i>
+        </div>
+        <div class="pair-copy">
+          <p class="label on-dark">(01) 关于寄语</p>
+          <h2 class="statement" id="about-title" data-reveal>寄语是一群<br>用<span class="px-word">方块</span>写信的人。</h2>
+          <p class="statement-sub" data-reveal>我们做 Minecraft 地图：搭场景<sup>BUILD</sup>、写机制<sup>LOGIC</sup>、讲故事<sup>STORY</sup>、配旋律<sup>SOUND</sup>——再把它们仔细封好，寄给屏幕前的你。</p>
+          <p class="about-note" data-reveal>“寄语”是托付出去的话。每一张地图，都是一封信。</p>
+        </div>
       </div>
     </section>
 
-    <div class="dither" data-from="#F4F2F4" data-to="#121118" aria-hidden="true"></div>
+    <div class="dither" data-from="#18141F" data-to="#F4F2F4" aria-hidden="true"></div>
 
     <!-- 作品索引 -->
     <section class="works" id="works" aria-labelledby="works-title">
       <div class="col col-wide">
         <header class="sec-head">
-          <p class="label on-dark">(02) 寄出的信</p>
+          <p class="label">(02) 寄出的信</p>
           <h2 class="display" id="works-title">作品</h2>
-          <p class="label on-dark" id="works-count"></p>
+          <p class="label" id="works-count"></p>
         </header>
         <ol class="work-list" id="work-list"></ol>
       </div>
     </section>
 
-    <div class="dither" data-from="#121118" data-to="#F4F2F4" aria-hidden="true"></div>
+    <div class="dither" data-from="#F4F2F4" data-to="#1E1828" aria-hidden="true"></div>
 
-    <!-- 成员：点头像切换 -->
+    <!-- 成员：立绘并排站在窗里，点谁谁换动作，下方介绍跟着替换 -->
     <section class="crew" id="crew" aria-labelledby="crew-title">
       <div class="col col-wide">
         <header class="sec-head">
-          <p class="label">(03) 成员</p>
+          <p class="label on-dark">(03) 成员</p>
           <h2 class="display" id="crew-title">邮差们</h2>
           <p class="crew-note" id="crew-note"></p>
         </header>
-        <div class="crew-stage">
-          <div class="crew-portrait" aria-hidden="true">
-            <canvas id="crew-big" width="8" height="8"></canvas>
-            <span class="crew-badge" id="crew-badge">No.01</span>
+        <div class="cast">
+          <div class="cast-window">
+            <canvas class="cast-bg" id="cast-bg" aria-hidden="true"></canvas>
+            <div class="cast-figures" id="cast-figures" role="tablist" aria-label="选择成员"></div>
           </div>
-          <div class="crew-panel" id="crew-panel" role="tabpanel" tabindex="0"></div>
+          <div class="cast-card" id="cast-card" role="tabpanel" tabindex="0"></div>
         </div>
-        <div class="crew-tabs" id="crew-tabs" role="tablist" aria-label="选择成员"></div>
       </div>
     </section>
 
-    <div class="dither" data-from="#F4F2F4" data-to="#929FD8" aria-hidden="true"></div>
+    <div class="dither" data-from="#1E1828" data-to="#929FD8" aria-hidden="true"></div>
 
     <!-- 招募 -->
     <section class="join" id="join" aria-labelledby="join-title">
