@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#201c1e">
+  <meta name="description" content="Step into the wonderfully strange world of Eastward. An editable visual study of the original game website.">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Eastward — A journey to the world above</title>
+  <link rel="icon" href="./assets/img/jasper.png">
+  <link rel="preload" href="./assets/fonts/TTNormsProBd/font.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="./styles.css">
+  <script src="./app.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#intro">Skip to content</a>
+  <header class="site-header">
+    <a class="brand" href="#home" aria-label="Couriers 寄语首页"><img src="./assets/img/couriers-bilingual-horizontal.svg" alt="Couriers 寄语" width="258" height="50"></a>
+    <button class="menu-toggle" aria-expanded="false" aria-controls="main-nav" aria-label="Open navigation"><span></span><span></span><span></span></button>
+    <nav id="main-nav" aria-label="主导航">
+      <a href="#home" aria-current="page">主页</a>
+      <a href="#features">作品</a>
+      <a href="#about">关于</a>
+    </nav>
+    <div class="join-wrap">
+      <a class="join-link" href="https://qm.qq.com/q/B6GiehmH62" target="_blank" rel="noopener noreferrer"><span>加入我们</span><svg class="join-arrow" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M4 12 12 4M4 4h8v8" stroke="currentColor" stroke-width="2" stroke-linecap="square"/></svg></a>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero" id="home" aria-label="Welcome to Eastward">
+      <div class="hero-stage">
+        <img class="hero-background" src="./assets/img/cmyz-hero-background-v2.png" alt="" width="1920" height="1080" fetchpriority="high" aria-hidden="true">
+        <div class="hero-scene" aria-hidden="true">
+          <img class="hero-logo" src="./assets/img/cmyz-page-v2.png" alt="" width="1536" height="576" fetchpriority="high">
+        </div>
+        <h1 class="sr-only">Eastward</h1>
+        <a class="dlc-sticker" href="https://space.bilibili.com/146080411" target="_blank" rel="noopener noreferrer" aria-label="企划新作：《沉默乐章：错位音》现已公开，前往 Bilibili 查看">
+          <span class="sticker-paper" aria-hidden="true"></span>
+          <span class="sticker-tab">企划新作！</span>
+          <span class="sticker-title">《沉默乐章：错位音》</span>
+          <strong class="sticker-announcement">现已公开！</strong>
+          <span class="sticker-rays" aria-hidden="true"><i></i><i></i><i></i></span>
+          <img class="sticker-record" src="./assets/img/minecraft/music-disc-blocks.png" alt="" width="96" height="96" aria-hidden="true">
+        </a>
+
+      </div>
+    </section>
+
+    <section class="intro" id="intro">
+      <img class="intro-smoke" src="./assets/img/smoke-1-cropped.jpg" alt="" loading="lazy">
+      <div class="intro-inner content-width">
+        <img class="tower" src="./assets/img/eastward-tower.png" alt="A floating tower in the world of Eastward" loading="lazy">
+        <div class="intro-copy">
+          <h2>Next stop…<br>Eastward!</h2>
+          <p>A world full of wonder. A population on the decline. Join John and Sam on a journey beyond their underground home, through lively towns, curious encounters, and a continent with secrets around every corner. With a frying pan, mysterious powers, and a little courage, an extraordinary adventure awaits.</p>
+        </div>
+      </div>
+      <a class="trailer-poster" href="https://www.bilibili.com/video/BV1M8NQ6GE8M" target="_blank" rel="noopener noreferrer" aria-label="在 Bilibili 观看预告片">
+        <img src="./assets/img/eastward-video-background.jpg" alt="Eastward launch trailer — John and Sam" loading="lazy" width="1600" height="900">
+        <span class="play-button" aria-hidden="true">▶</span>
+        <span class="trailer-label">Watch the trailer</span>
+      </a>
+    </section>
+
+    <section class="reviews" aria-label="Reviews">
+      <div class="review-inner">
+        <blockquote>“Who knew you could have so much fun with a frying pan?”</blockquote>
+        <p>9/10 – DualShockers</p>
+        <div class="review-dots" aria-label="Choose a review">
+          <button class="active" data-review="0" aria-label="DualShockers review" aria-pressed="true"></button>
+          <button data-review="1" aria-label="Screen Rant review" aria-pressed="false"></button>
+          <button data-review="2" aria-label="The Gamer review" aria-pressed="false"></button>
+        </div>
+      </div>
+    </section>
+
+    <section class="features" id="features">
+      <h2>Features</h2>
+      <div class="feature-track" id="feature-track" aria-label="Explore game features"></div>
+      <div class="feature-controls"><button class="square-button" id="features-prev" aria-label="Previous feature">←</button><span id="feature-count">01 / 05</span><button class="square-button" id="features-next" aria-label="Next feature">→</button></div>
+    </section>
+
+    <section class="cast" id="cast">
+      <h2>Meet the cast</h2>
+      <div class="cast-window">
+        <div class="cast-portraits" role="tablist" aria-label="Characters"></div>
+        <img class="cast-frame" src="./assets/img/textures/character-window.png" alt="" loading="lazy">
+      </div>
+      <div class="cast-bio" id="cast-bio" role="tabpanel" aria-labelledby="tab-john" tabindex="0"></div>
+    </section>
+
+    <section class="story" id="about">
+      <div class="content-width story-inner">
+        <div class="story-copy">
+          <h2>Sometime in the<br>near-future…</h2>
+          <p>A poisonous miasma has driven people below ground. Generations pass, and the blue sky becomes a distant memory. But a quiet miner and a young girl with unusual powers believe there is more to the world.</p>
+          <p>Follow John and Sam along the railway, beyond the safety of their subterranean home. Meet the people who remain above, discover the source of Sam’s abilities, and unravel the mystery hanging over the land.</p>
+          <p>A richly detailed adventure from Shanghai studio Pixpil, published by Chucklefish.</p>
+          <a class="button cream-button" href="https://store.steampowered.com/app/977880/Eastward/" target="_blank" rel="noopener noreferrer">Begin your journey <span>↗</span></a>
+        </div>
+        <img class="building-fragment" src="./assets/img/building-fragment.png" alt="A colourful building from Eastward" loading="lazy">
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-main content-width">
+      <div class="studio-logos">
+        <a href="http://pixpil.com/" target="_blank" rel="noopener noreferrer"><img src="./assets/img/logos/pixpil.png" alt="Pixpil" loading="lazy"></a>
+        <a href="https://chucklefish.org/" target="_blank" rel="noopener noreferrer"><img src="./assets/img/logos/chucklefish.png" alt="Chucklefish" loading="lazy"></a>
+        <a href="https://www.xd.com/" target="_blank" rel="noopener noreferrer"><img src="./assets/img/logos/xd.png" alt="XD" loading="lazy"></a>
+      </div>
+      <div class="newsletter">
+        <h2>Head Eastward…</h2>
+        <p>Stay in the loop with news and adventures from the world of Eastward.</p>
+        <a class="button newsletter-button" href="https://eastwardgame.com/#footer" target="_blank" rel="noopener noreferrer">Join the official mailing list <span>↗</span></a>
+      </div>
+      <button class="gacha-trigger" aria-label="Play the Pixball machine"><img src="./assets/img/mini-gacha.png" alt="Pixball machine" loading="lazy"><span>Try your luck!</span></button>
+    </div>
+    <div class="footer-bottom content-width">
+      <div class="socials"><a href="https://discord.com/invite/chucklefish" target="_blank" rel="noopener noreferrer">Discord ↗</a><a href="https://twitter.com/pixpilgames" target="_blank" rel="noopener noreferrer">Twitter ↗</a><a href="https://www.reddit.com/r/eastward/" target="_blank" rel="noopener noreferrer">Reddit ↗</a></div>
+      <p>Eastward artwork © Pixpil / Chucklefish. <a href="https://eastwardgame.com/" target="_blank" rel="noopener noreferrer">Original website ↗</a><br><span class="study-note">Unofficial visual study · First edition</span></p>
+      <a href="#home" class="back-top">Back to top ↑</a>
+    </div>
+  </footer>
+
+  <aside class="quick-links" aria-label="社区链接">
+    <a class="button platform bilibili" href="https://space.bilibili.com/146080411" target="_blank" rel="noopener noreferrer" aria-label="访问 Bilibili 主页" title="Bilibili"><span class="platform-icon" aria-hidden="true"></span></a>
+    <a class="button platform qq" href="https://qm.qq.com/q/B6GiehmH62" target="_blank" rel="noopener noreferrer" aria-label="打开 QQ 链接" title="QQ"><span class="platform-icon" aria-hidden="true"></span></a>
+  </aside>
+
+  <aside class="trailer-shortcut" aria-label="预告片">
+    <a class="trailer-shortcut-button" href="https://www.bilibili.com/video/BV1M8NQ6GE8M" target="_blank" rel="noopener noreferrer" aria-label="在 Bilibili 观看预告片">
+      <span class="trailer-shortcut-play" aria-hidden="true">▶</span>
+      <span>观看预告片</span>
+      <img class="trailer-pixel-art" src="./assets/img/trailer.png" alt="" width="90" height="89" aria-hidden="true">
+    </a>
+  </aside>
+
+  <dialog id="media-dialog" aria-labelledby="media-title"><button class="dialog-close square-button" aria-label="Close dialog">×</button><div id="media-content"></div></dialog>
+  <dialog id="gacha-dialog" aria-labelledby="gacha-title"><button class="dialog-close square-button" aria-label="Close Pixball machine">×</button><h2 id="gacha-title">Pixball machine</h2><p>A little surprise from the world of Earth Born.</p><div class="gacha-stage"><img src="./assets/img/mini-gacha.png" alt="Pixball machine"><div id="gacha-result" aria-live="polite">?</div></div><button class="button cream-button" id="gacha-spin">Give it a spin ↻</button><p id="gacha-count" aria-live="polite">0 / 5 discovered</p><div id="gacha-collection"></div></dialog>
+</body>
+</html>

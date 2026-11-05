@@ -1,0 +1,3 @@
+Minecraft music disc blocks texture (16 x 16). Original game artwork: Mojang.
+Source: https://raw.githubusercontent.com/InventivetalentDev/minecraft-assets/1.21/assets/minecraft/textures/item/music_disc_blocks.png
+Reference: https://mcasset.cloud/1.21/assets/minecraft/textures/item

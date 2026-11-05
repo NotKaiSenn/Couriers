@@ -1,0 +1,24 @@
+# Local dependencies and caches
+node_modules/
+.cache/
+__pycache__/
+*.pyc
+*.log
+.DS_Store
+Thumbs.db
+
+# Credentials and local configuration
+.env
+.env.*
+!.env.example
+.openai/
+.vercel/
+
+# Local design iterations, archives and verification output
+.work/
+designs/
+*.zip
+*.tar
+*.tar.gz
+
+# dist contains the editable static website and must be tracked.
