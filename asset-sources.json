@@ -12,6 +12,10 @@
     "source": "Project artwork supplied or locally adapted for Couriers"
   },
   {
+    "file": "assets/img/couriers-light.svg",
+    "source": "couriers-bilingual-horizontal.svg with the wordmark recoloured to #F6F3F6 for dark backgrounds"
+  },
+  {
     "file": "assets/img/envelope.svg",
     "source": "Envelope mark extracted from couriers-bilingual-horizontal.svg (used as favicon and letter stamp)"
   },
@@ -30,6 +34,13 @@
     "license": "SIL Open Font License 1.1 (assets/fonts/FusionPixel/OFL.txt)",
     "note": "Subset to ASCII, GB2312 symbols and the 6,763 GB2312 hanzi",
     "bytes": 194108
+  },
+  {
+    "file": "assets/fonts/SmileySans/smiley-sans-oblique.woff2",
+    "source": "npm @fontpkg/smiley-sans@2.0.4 (Smiley Sans Oblique 得意黑 v2.0.1 by atelierAnchor)",
+    "license": "SIL Open Font License 1.1 (stated in the font's name table)",
+    "note": "Subset to ASCII, punctuation and the 3,755 GB2312 level-1 hanzi",
+    "bytes": 524960
   },
   {
     "file": "assets/icons/bilibili.svg",

@@ -1,0 +1,4 @@
+Smiley Sans Oblique (得意黑) v2.0.1 by atelierAnchor
+Package: @fontpkg/smiley-sans@2.0.4 (npm)
+License: SIL Open Font License 1.1 (stated in the font name table; full text https://scripts.sil.org/OFL)
+This copy is subset to ASCII, punctuation and the 3,755 GB2312 level-1 hanzi. Rarer characters fall back to the system font.
