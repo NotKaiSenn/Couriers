@@ -1,7 +1,0 @@
-Bilibili and QQ logos: Remix Icon
-https://github.com/Remix-Design/RemixIcon
-
-bilibili.svg: icons/Logos/bilibili-fill.svg
-qq.svg: icons/Logos/qq-fill.svg
-
-License: LICENSE-RemixIcon.txt

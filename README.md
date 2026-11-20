@@ -1,39 +1,34 @@
-# Couriers 网站
+# Couriers — Minecraft 建筑与地图创作团队官网
 
-Couriers / 寄语的静态网站，包含《沉默乐章：错位音》主视觉、像素导航与贴纸、Bilibili / QQ 入口及预告片链接。
+基于 **Vite + React 19 + TypeScript + Tailwind CSS v4** 构建的 Minecraft 团队门户官网，视觉风格致敬 **CubeCraft Forums（XenForo / UI.X 门户首页）**。
 
-## 本地运行
+## 特色功能
 
-安装 Node.js 18 或更新版本后，在仓库根目录执行：
+- **CubeCraft 经典门户顶栏**：全宽 3D Minecraft 渲染横幅 + 左侧一键复制展示服 IP 胶囊（含在线人数脉冲状态）+ 中央立体体素 Logo + 右侧社区群组入口 + 吸顶导航栏。
+- **双栏论坛门户首页**：左侧动态信息流（支持按「作品发布 / 开发日志 / 团队公告 / 幕后教程」筛选、点赞互动与点击阅读完整帖文及评论回复），右侧高密度功能侧边栏（展示服状态、冬季招募进度、在线核心成员、热门精选帖文、官方阵地）。
+- **多视图完整官网**：内置「首页动态」、「作品画廊（风格筛选）」、「团队成员（职级分组 + 像素风 MC 头像）」、「招募申请（实时像素头像预览与提交回执）」。
+- **明亮 / 暗夜一键切换**：默认呈现 CubeCraft 标志性的明亮天蓝与纯白卡片质感，支持右上角无缝切换深海暗夜模式，并记住用户偏好。
+- **全局快捷搜索**：支持 `⌘K` / `Ctrl+K` 检索全站帖文、地图作品与成员。
 
-```sh
-node server.mjs
+## 快速开始
+
+```bash
+npm install
+npm run dev
 ```
 
-打开 http://localhost:4173 。无需安装依赖或执行构建。也可以使用 `npm run dev`。
+构建生产版本：
 
-## 文件结构
-
-- `dist/index.html`：页面结构、文案及链接。
-- `dist/styles.css`：配色、布局、像素边框及响应式样式。
-- `dist/app.js`：滚动效果、导航、特色轮播、人物切换和本地 Pixball 交互。
-- `dist/assets/`：当前页面实际引用的图片、字体与图标，以及相关来源说明。
-- `server.mjs`：仅监听本机的静态预览服务器。
-- `asset-sources.json`：保留素材的来源记录。
-
-`dist` 是直接维护的网页源文件目录，不是可以删除的自动生成目录。修改后刷新浏览器即可查看。
-
-## 检查
-
-```sh
-node --check dist/app.js
-node --check server.mjs
+```bash
+npm run build
 ```
 
-## 素材与当前状态
+## 自定义团队内容
 
-首页已使用 Couriers 标志和项目主视觉；下方部分介绍、人物及截图仍保留 Eastward 参考内容，后续可逐项替换。Eastward 美术属于 Pixpil / Chucklefish，Minecraft 唱片素材属于相应权利人；来源记录不等同于许可授权。
+所有示例数据集中在 [`src/data/mockData.ts`](src/data/mockData.ts)，你可以直接修改：
 
-图标来自 Remix Icon，许可见 `dist/assets/icons/LICENSE-RemixIcon.txt`。项目提供的标志、主视觉及其他素材保留各自权利归属。
-
-本仓库只包含当前运行所需文件；未纳入旧素材、音频、设计草稿、临时截图、处理脚本和 Sites 配置。默认仅本地开发，上传或部署需要用户明确授权。
+- `SERVER_INFO`：展示服 IP、游戏版本、在线人数与 QQ 群号
+- `TEAM_MEMBERS`：成员昵称、Minecraft ID、职级徽章（`OWNER` / `ADMIN` / `ARCHITECT` / `TERRAFORMER` / `ORGANIC` / `RENDERER`）
+- `PORTAL_POSTS`：首页发布帖文、开发日志、公告与教程内容
+- `PORTFOLIO_PROJECTS`：作品画廊地图项目与封面图（图片位于 `public/images/`）
+- `RECRUITMENT_ROLES`：开放招募的岗位与状态（`OPEN` / `LIMITED` / `CLOSED`）
