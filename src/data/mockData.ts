@@ -44,7 +44,7 @@ export const ABOUT_STORY_BLOCKS: AboutStoryBlock[] = [
     titleTop: '下一站...',
     titleBottom: '寄语世界！',
     description:
-      '欢迎来到寄语编织的方块世界！拆开这封由像素火漆封缄的信，踏上未知的旅途。在云海浮空的小镇漫步，踏入停摆在午夜的赤红剧场，拾起散落的唱片与纸条——每一张原创体验地图，都在等你亲自开启下一章！',
+      '欢迎来到寄语编织的方块世界！拆开这封由像素火漆封缄的信，踏上未知的旅途。在云海浮空的小镇漫步，踏入停摆在午夜的赤红剧场，拾起散落的唱片与纸条——每一张体验地图，都在等你亲自开启下一章！',
     image: '/images/about-island.jpg',
     align: 'image-left',
   },
@@ -76,7 +76,7 @@ export const TEAM_MEMBERS: TeamMember[] = [
     isFounder: true,
     role: '团队发起人 / 剧本创作',
     groups: ['剧本创作'],
-    bio: '寄语 Couriers 团队发起人，主理原创体验地图的世界观立意、核心剧情剧本与整体叙事节奏统筹。',
+    bio: '寄语 Couriers 团队发起人，主理体验地图的世界观立意、核心剧情剧本与整体叙事节奏统筹。',
     featuredWork: '沉默乐章：错位音',
     avatarUrl: '/images/avatars/RainSwallow.png',
     skinUrl: '/images/skins/RainSwallow.png',

@@ -64,6 +64,121 @@ function applyMinecraftUVs(
 }
 
 /**
+ * Builds a single merged solid-voxel BufferGeometry for a Minecraft skin overlay layer.
+ * Every non-transparent texel on the 6 overlay faces becomes an extruded 3D pixel block.
+ */
+function createOverlayVoxelGeometry(
+  imgData: ImageData,
+  texX: number,
+  texY: number,
+  texW: number,
+  texH: number,
+  texD: number,
+  w: number,
+  h: number,
+  d: number,
+  thickness: number
+): THREE.BufferGeometry | null {
+  const faceRects = getBoxFaceRects(texX, texY, texW, texH, texD);
+  const unitBox = new THREE.BoxGeometry(1, 1, 1);
+  const unitPos = unitBox.attributes.position as THREE.BufferAttribute;
+  const unitNorm = unitBox.attributes.normal as THREE.BufferAttribute;
+  const unitIdx = unitBox.index!;
+
+  const positions: number[] = [];
+  const normals: number[] = [];
+  const colors: number[] = [];
+  const indices: number[] = [];
+
+  const tmpColor = new THREE.Color();
+  let vertOffset = 0;
+
+  const pushVoxel = (
+    cx: number,
+    cy: number,
+    cz: number,
+    sx: number,
+    sy: number,
+    sz: number,
+    r: number,
+    g: number,
+    b: number
+  ) => {
+    tmpColor.setRGB(r / 255, g / 255, b / 255, THREE.SRGBColorSpace);
+    for (let i = 0; i < unitPos.count; i++) {
+      positions.push(
+        cx + unitPos.getX(i) * sx,
+        cy + unitPos.getY(i) * sy,
+        cz + unitPos.getZ(i) * sz
+      );
+      normals.push(unitNorm.getX(i), unitNorm.getY(i), unitNorm.getZ(i));
+      colors.push(tmpColor.r, tmpColor.g, tmpColor.b);
+    }
+    for (let i = 0; i < unitIdx.count; i++) {
+      indices.push(vertOffset + unitIdx.getX(i));
+    }
+    vertOffset += unitPos.count;
+  };
+
+  const { data, width: imgW } = imgData;
+
+  faceRects.forEach(([px, py, pw, ph], faceIdx) => {
+    for (let iy = 0; iy < ph; iy++) {
+      for (let ix = 0; ix < pw; ix++) {
+        const idx = ((py + iy) * imgW + (px + ix)) * 4;
+        const a = data[idx + 3];
+        if (a <= 20) continue;
+        const r = data[idx];
+        const g = data[idx + 1];
+        const b = data[idx + 2];
+
+        if (faceIdx === 0) {
+          // +x (character left)
+          const cz = d / 2 - ((ix + 0.5) * d) / pw;
+          const cy = h / 2 - ((iy + 0.5) * h) / ph;
+          pushVoxel(w / 2 + thickness / 2, cy, cz, thickness, h / ph, d / pw, r, g, b);
+        } else if (faceIdx === 1) {
+          // -x (character right)
+          const cz = -d / 2 + ((ix + 0.5) * d) / pw;
+          const cy = h / 2 - ((iy + 0.5) * h) / ph;
+          pushVoxel(-w / 2 - thickness / 2, cy, cz, thickness, h / ph, d / pw, r, g, b);
+        } else if (faceIdx === 2) {
+          // +y (top)
+          const cx = -w / 2 + ((ix + 0.5) * w) / pw;
+          const cz = -d / 2 + ((iy + 0.5) * d) / ph;
+          pushVoxel(cx, h / 2 + thickness / 2, cz, w / pw, thickness, d / ph, r, g, b);
+        } else if (faceIdx === 3) {
+          // -y (bottom)
+          const cx = -w / 2 + ((ix + 0.5) * w) / pw;
+          const cz = -d / 2 + ((iy + 0.5) * d) / ph;
+          pushVoxel(cx, -h / 2 - thickness / 2, cz, w / pw, thickness, d / ph, r, g, b);
+        } else if (faceIdx === 4) {
+          // +z (front)
+          const cx = -w / 2 + ((ix + 0.5) * w) / pw;
+          const cy = h / 2 - ((iy + 0.5) * h) / ph;
+          pushVoxel(cx, cy, d / 2 + thickness / 2, w / pw, h / ph, thickness, r, g, b);
+        } else {
+          // -z (back)
+          const cx = w / 2 - ((ix + 0.5) * w) / pw;
+          const cy = h / 2 - ((iy + 0.5) * h) / ph;
+          pushVoxel(cx, cy, -d / 2 - thickness / 2, w / pw, h / ph, thickness, r, g, b);
+        }
+      }
+    }
+  });
+
+  unitBox.dispose();
+  if (positions.length === 0) return null;
+
+  const geom = new THREE.BufferGeometry();
+  geom.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+  geom.setAttribute('normal', new THREE.Float32BufferAttribute(normals, 3));
+  geom.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+  geom.setIndex(indices);
+  return geom;
+}
+
+/**
  * Mirrors a legacy 64x32 sub-region horizontally onto a 64x64 upgraded canvas.
  */
 function copyMirroredRegion(
@@ -126,6 +241,16 @@ function normalizeSkin(img: HTMLImageElement): {
   return { canvas, isSlim, hasSecondLayer: !isLegacy };
 }
 
+type ClickEmote = 'wave' | 'cheerJump' | 'headTilt' | 'happyDance';
+
+const EMOTE_ORDER: ClickEmote[] = ['wave', 'cheerJump', 'headTilt', 'happyDance'];
+const EMOTE_DURATION: Record<ClickEmote, number> = {
+  wave: 1.05,
+  cheerJump: 0.95,
+  headTilt: 1.0,
+  happyDance: 1.15,
+};
+
 /**
  * Interactive 3D Chibi Mojavatar renderer powered by Three.js and real 64x64/64x32 Minecraft skins.
  */
@@ -141,6 +266,7 @@ export const Mojavatar3D: React.FC<Mojavatar3DProps> = ({
   const sceneRefs = useRef<{
     rootGroup: THREE.Group | null;
     rigGroup: THREE.Group | null;
+    shadowPlane: THREE.Mesh | null;
     headPivot: THREE.Group | null;
     leftArmPivot: THREE.Group | null;
     rightArmPivot: THREE.Group | null;
@@ -152,10 +278,15 @@ export const Mojavatar3D: React.FC<Mojavatar3DProps> = ({
     overlayMat: THREE.MeshStandardMaterial | null;
     targetYaw: number;
     targetPitch: number;
-    popProgress: number;
+    popTime: number;
+    activeEmote: ClickEmote | null;
+    emoteTime: number;
+    nextEmoteIdx: number;
+    hasEnteredView: boolean;
   }>({
     rootGroup: null,
     rigGroup: null,
+    shadowPlane: null,
     headPivot: null,
     leftArmPivot: null,
     rightArmPivot: null,
@@ -167,7 +298,11 @@ export const Mojavatar3D: React.FC<Mojavatar3DProps> = ({
     overlayMat: null,
     targetYaw: 0.34,
     targetPitch: 0.08,
-    popProgress: 0,
+    popTime: 0,
+    activeEmote: null,
+    emoteTime: 0,
+    nextEmoteIdx: 0,
+    hasEnteredView: false,
   });
 
   useEffect(() => {
@@ -266,14 +401,41 @@ export const Mojavatar3D: React.FC<Mojavatar3DProps> = ({
 
     sceneRefs.current.rootGroup = rootGroup;
     sceneRefs.current.rigGroup = rigGroup;
+    sceneRefs.current.shadowPlane = shadowPlane;
 
-    // Pointer interaction: gentle tilt on hover, drag-to-spin 360°
+    // Trigger Q-bouncy entrance when scrolling into view the first time
+    const io = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((entry) => entry.isIntersecting) && !sceneRefs.current.hasEnteredView) {
+          sceneRefs.current.hasEnteredView = true;
+          sceneRefs.current.popTime = 0;
+        }
+      },
+      { threshold: 0.25 }
+    );
+    io.observe(mount);
+
+    // Pointer interaction: gentle tilt on hover, drag-to-spin 360°, click-to-emote
     let isDragging = false;
     let lastX = 0;
+    let downX = 0;
+    let downY = 0;
+    let downTime = 0;
+
+    const triggerClickEmote = () => {
+      const refs = sceneRefs.current;
+      const emote = EMOTE_ORDER[refs.nextEmoteIdx % EMOTE_ORDER.length];
+      refs.nextEmoteIdx += 1;
+      refs.activeEmote = emote;
+      refs.emoteTime = 0;
+    };
 
     const handlePointerDown = (e: PointerEvent) => {
       isDragging = true;
       lastX = e.clientX;
+      downX = e.clientX;
+      downY = e.clientY;
+      downTime = performance.now();
       mount.setPointerCapture(e.pointerId);
     };
 
@@ -291,7 +453,14 @@ export const Mojavatar3D: React.FC<Mojavatar3DProps> = ({
       }
     };
 
-    const handlePointerUp = () => {
+    const handlePointerUp = (e: PointerEvent) => {
+      if (isDragging) {
+        const dist = Math.hypot(e.clientX - downX, e.clientY - downY);
+        const elapsed = performance.now() - downTime;
+        if (dist < 6 && elapsed < 360) {
+          triggerClickEmote();
+        }
+      }
       isDragging = false;
     };
 
@@ -319,36 +488,184 @@ export const Mojavatar3D: React.FC<Mojavatar3DProps> = ({
 
     let rafId = 0;
     const clock = new THREE.Clock();
+    const POP_DURATION = 0.72;
 
     const animate = () => {
       rafId = requestAnimationFrame(animate);
+      const dt = Math.min(clock.getDelta(), 0.05);
       const t = clock.getElapsedTime();
       const refs = sceneRefs.current;
 
-      // Smooth spring pop on member switch
-      refs.popProgress = Math.min(1, refs.popProgress + 0.08);
-      const easeOut = 1 - Math.pow(1 - refs.popProgress, 3);
-      const s = 0.86 + 0.14 * easeOut;
+      // 1. Q-bouncy squash-and-stretch pop-up entrance animation
+      refs.popTime = Math.min(POP_DURATION, refs.popTime + dt);
+      const p = refs.popTime / POP_DURATION;
+
+      let scaleX = 1;
+      let scaleY = 1;
+      let scaleZ = 1;
+      let jumpY = 0;
+      let spinOffsetY = 0;
+      let rigTiltZ = 0;
+
+      // Base idle pose targets
+      let headRotX = 0;
+      let headRotY = 0;
+      let headRotZ = -0.04 + Math.sin(t * 1.4) * 0.025;
+      let rightArmX = -0.22 + Math.sin(t * 2.1) * 0.07;
+      let rightArmZ = -0.14 - Math.sin(t * 1.6) * 0.04;
+      let leftArmX = 0.18 - Math.sin(t * 2.1) * 0.07;
+      let leftArmZ = 0.12 + Math.sin(t * 1.6) * 0.03;
+      let rightLegX = 0;
+      let leftLegX = 0;
+
+      if (p < 1) {
+        // Elastic spring pop from below with squash-and-stretch
+        const rise = 1 - Math.pow(1 - Math.min(1, p / 0.45), 3);
+        const hop = Math.sin(Math.min(1, p / 0.65) * Math.PI) * 0.28;
+        const microHop =
+          p > 0.65 ? Math.sin(((p - 0.65) / 0.35) * Math.PI) * 0.055 : 0;
+        jumpY += -0.68 * (1 - rise) + hop + microHop;
+
+        // Damped jelly oscillation for squash & stretch
+        const jelly = Math.sin(p * Math.PI * 3.2) * Math.exp(-p * 3.8) * 0.24;
+        const baseScale = Math.min(1, 0.22 + rise * 0.78);
+        scaleY *= baseScale * (1 + jelly);
+        scaleX *= baseScale * (1 - jelly * 0.65);
+        scaleZ *= baseScale * (1 - jelly * 0.65);
+
+        // Excited little arm lift during pop-in
+        const armPop = Math.sin(p * Math.PI) * (1 - p);
+        rightArmZ -= armPop * 0.65;
+        leftArmZ += armPop * 0.65;
+      }
+
+      // 2. Click Emotes
+      if (refs.activeEmote) {
+        const dur = EMOTE_DURATION[refs.activeEmote];
+        refs.emoteTime += dt;
+        const ep = Math.min(1, refs.emoteTime / dur);
+        // Smooth fade-in and fade-out envelope
+        const env = Math.sin(Math.min(1, ep / 0.15) * (Math.PI / 2)) *
+          Math.sin(Math.min(1, (1 - ep) / 0.2) * (Math.PI / 2));
+
+        if (refs.activeEmote === 'wave') {
+          // Friendly wave + slight lean + tiny joyful bounce
+          const waveSwing = Math.sin(ep * Math.PI * 6.5) * 0.36;
+          rightArmX = THREE.MathUtils.lerp(rightArmX, -0.35, env);
+          rightArmZ = THREE.MathUtils.lerp(rightArmZ, -2.55 + waveSwing, env);
+          leftArmZ = THREE.MathUtils.lerp(leftArmZ, 0.32, env);
+          headRotZ = THREE.MathUtils.lerp(headRotZ, 0.16 + waveSwing * 0.12, env);
+          headRotY = THREE.MathUtils.lerp(headRotY, -0.14, env);
+          rigTiltZ += 0.06 * env;
+          const b = Math.abs(Math.sin(ep * Math.PI * 2)) * 0.09 * env;
+          jumpY += b;
+          const sq = Math.sin(ep * Math.PI * 4) * 0.06 * env;
+          scaleY *= 1 + sq;
+          scaleX *= 1 - sq * 0.5;
+          scaleZ *= 1 - sq * 0.5;
+        } else if (refs.activeEmote === 'cheerJump') {
+          // Anticipation squash -> 360° airborne cheer spin -> squishy landing
+          if (ep < 0.18) {
+            const c = Math.sin((ep / 0.18) * Math.PI);
+            scaleY *= 1 - c * 0.18;
+            scaleX *= 1 + c * 0.12;
+            scaleZ *= 1 + c * 0.12;
+            jumpY -= c * 0.08;
+            rightArmX = THREE.MathUtils.lerp(rightArmX, 0.35, c);
+            leftArmX = THREE.MathUtils.lerp(leftArmX, 0.35, c);
+          } else if (ep < 0.78) {
+            const air = (ep - 0.18) / 0.6;
+            const arc = Math.sin(air * Math.PI);
+            jumpY += arc * 0.48;
+            spinOffsetY += air * Math.PI * 2;
+            scaleY *= 1 + arc * 0.1;
+            scaleX *= 1 - arc * 0.05;
+            scaleZ *= 1 - arc * 0.05;
+            rightArmZ = THREE.MathUtils.lerp(rightArmZ, -2.5, arc);
+            leftArmZ = THREE.MathUtils.lerp(leftArmZ, 2.5, arc);
+            rightLegX = THREE.MathUtils.lerp(rightLegX, 0.45 * Math.sin(air * Math.PI * 2), arc);
+            leftLegX = THREE.MathUtils.lerp(leftLegX, -0.45 * Math.sin(air * Math.PI * 2), arc);
+          } else {
+            const land = (ep - 0.78) / 0.22;
+            const j = Math.sin(land * Math.PI * 1.5) * (1 - land) * 0.18;
+            scaleY *= 1 - j;
+            scaleX *= 1 + j * 0.65;
+            scaleZ *= 1 + j * 0.65;
+          }
+        } else if (refs.activeEmote === 'headTilt') {
+          // Playful curious double head-tilt with jelly wobble
+          const tiltWave = Math.sin(ep * Math.PI * 2);
+          headRotZ = THREE.MathUtils.lerp(headRotZ, tiltWave * 0.36, env);
+          headRotY = THREE.MathUtils.lerp(headRotY, -tiltWave * 0.22, env);
+          headRotX = THREE.MathUtils.lerp(headRotX, -0.08, env);
+          rightArmZ = THREE.MathUtils.lerp(rightArmZ, -0.52 - Math.abs(tiltWave) * 0.25, env);
+          leftArmZ = THREE.MathUtils.lerp(leftArmZ, 0.52 + Math.abs(tiltWave) * 0.25, env);
+          const wobble = Math.sin(ep * Math.PI * 5) * 0.07 * env;
+          scaleY *= 1 + wobble;
+          scaleX *= 1 - wobble * 0.55;
+          scaleZ *= 1 - wobble * 0.55;
+        } else if (refs.activeEmote === 'happyDance') {
+          // Bouncy little marching dance with swinging arms & legs
+          const beat = ep * Math.PI * 4;
+          const step = Math.sin(beat);
+          const bounce = Math.abs(Math.sin(beat));
+          jumpY += bounce * 0.12 * env;
+          rigTiltZ += step * 0.09 * env;
+          headRotZ = THREE.MathUtils.lerp(headRotZ, -step * 0.18, env);
+          rightArmX = THREE.MathUtils.lerp(rightArmX, step * 0.75, env);
+          leftArmX = THREE.MathUtils.lerp(leftArmX, -step * 0.75, env);
+          rightArmZ = THREE.MathUtils.lerp(rightArmZ, -0.35 - bounce * 0.25, env);
+          leftArmZ = THREE.MathUtils.lerp(leftArmZ, 0.35 + bounce * 0.25, env);
+          rightLegX = THREE.MathUtils.lerp(rightLegX, -step * 0.55, env);
+          leftLegX = THREE.MathUtils.lerp(leftLegX, step * 0.55, env);
+          const sq = (bounce - 0.45) * 0.12 * env;
+          scaleY *= 1 + sq;
+          scaleX *= 1 - sq * 0.5;
+          scaleZ *= 1 - sq * 0.5;
+        }
+
+        if (ep >= 1) {
+          refs.activeEmote = null;
+          refs.emoteTime = 0;
+        }
+      }
 
       if (refs.rootGroup && refs.rigGroup) {
         refs.rootGroup.rotation.y +=
           (refs.targetYaw - refs.rootGroup.rotation.y) * 0.1;
         refs.rootGroup.rotation.x +=
           (refs.targetPitch - refs.rootGroup.rotation.x) * 0.1;
-        refs.rigGroup.scale.setScalar(s);
-        refs.rigGroup.position.y = Math.sin(t * 2.1) * 0.035;
+
+        refs.rigGroup.scale.set(scaleX, scaleY, scaleZ);
+        refs.rigGroup.position.y = Math.sin(t * 2.1) * 0.035 + jumpY;
+        refs.rigGroup.rotation.y = spinOffsetY;
+        refs.rigGroup.rotation.z = rigTiltZ;
+      }
+
+      if (refs.shadowPlane) {
+        const heightFactor = Math.max(0.45, 1 - Math.max(0, jumpY) * 0.7);
+        const shadowScale = Math.min(1.15, scaleX) * heightFactor;
+        refs.shadowPlane.scale.setScalar(Math.max(0.15, shadowScale));
       }
 
       if (refs.headPivot) {
-        refs.headPivot.rotation.z = -0.04 + Math.sin(t * 1.4) * 0.025;
+        refs.headPivot.rotation.x = headRotX;
+        refs.headPivot.rotation.y = headRotY;
+        refs.headPivot.rotation.z = headRotZ;
       }
       if (refs.rightArmPivot) {
-        refs.rightArmPivot.rotation.x = -0.22 + Math.sin(t * 2.1) * 0.07;
-        refs.rightArmPivot.rotation.z = -0.14 - Math.sin(t * 1.6) * 0.04;
+        refs.rightArmPivot.rotation.x = rightArmX;
+        refs.rightArmPivot.rotation.z = rightArmZ;
       }
       if (refs.leftArmPivot) {
-        refs.leftArmPivot.rotation.x = 0.18 - Math.sin(t * 2.1) * 0.07;
-        refs.leftArmPivot.rotation.z = 0.12 + Math.sin(t * 1.6) * 0.03;
+        refs.leftArmPivot.rotation.x = leftArmX;
+        refs.leftArmPivot.rotation.z = leftArmZ;
+      }
+      if (refs.rightLegPivot) {
+        refs.rightLegPivot.rotation.x = rightLegX;
+      }
+      if (refs.leftLegPivot) {
+        refs.leftLegPivot.rotation.x = leftLegX;
       }
 
       renderer.render(scene, camera);
@@ -357,6 +674,7 @@ export const Mojavatar3D: React.FC<Mojavatar3DProps> = ({
 
     return () => {
       cancelAnimationFrame(rafId);
+      io.disconnect();
       window.removeEventListener('resize', handleResize);
       mount.removeEventListener('pointerdown', handlePointerDown);
       mount.removeEventListener('pointermove', handlePointerMove);
@@ -418,13 +736,12 @@ export const Mojavatar3D: React.FC<Mojavatar3DProps> = ({
       });
 
       const overlayMat = new THREE.MeshStandardMaterial({
-        map: texture,
-        transparent: true,
-        alphaTest: 0.1,
-        side: THREE.DoubleSide,
-        roughness: 0.7,
+        vertexColors: true,
+        roughness: 0.72,
         metalness: 0.02,
       });
+      const skinCtx = canvas.getContext('2d')!;
+      const skinImgData = skinCtx.getImageData(0, 0, 64, 64);
 
       const createdMeshes: THREE.Object3D[] = [];
       const addPart = (
@@ -447,39 +764,55 @@ export const Mojavatar3D: React.FC<Mojavatar3DProps> = ({
         createdMeshes.push(mesh);
       };
 
+      const addOverlayVoxels = (
+        parent: THREE.Group,
+        texX: number,
+        texY: number,
+        texW: number,
+        texH: number,
+        texD: number,
+        w: number,
+        h: number,
+        d: number,
+        thickness: number,
+        x: number,
+        y: number,
+        z: number
+      ) => {
+        const geom = createOverlayVoxelGeometry(
+          skinImgData,
+          texX,
+          texY,
+          texW,
+          texH,
+          texD,
+          w,
+          h,
+          d,
+          thickness
+        );
+        if (!geom) return;
+        const mesh = new THREE.Mesh(geom, overlayMat);
+        mesh.position.set(x, y, z);
+        mesh.castShadow = true;
+        mesh.receiveShadow = true;
+        parent.add(mesh);
+        createdMeshes.push(mesh);
+      };
+
       // Chibi Mojavatar Proportions: large expressive head + compact torso & short limbs
-      // 1. Head + Hat Overlay (centered around y = +0.50)
+      // 1. Head + Hat Voxel Overlay (centered around y = +0.50)
       const headPivot = new THREE.Group();
       headPivot.position.set(0, 0.02, 0);
       addPart(headPivot, 1.0, 1.0, 1.0, getBoxFaceRects(0, 0, 8, 8, 8), baseMat, 0, 0.5, 0);
-      addPart(
-        headPivot,
-        1.11,
-        1.11,
-        1.11,
-        getBoxFaceRects(32, 0, 8, 8, 8),
-        overlayMat,
-        0,
-        0.5,
-        0
-      );
+      addOverlayVoxels(headPivot, 32, 0, 8, 8, 8, 1.0, 1.0, 1.0, 0.055, 0, 0.5, 0);
       rigGroup.add(headPivot);
 
       // 2. Chibi Torso (y: -0.60 .. +0.02)
       const torsoGroup = new THREE.Group();
       addPart(torsoGroup, 0.66, 0.62, 0.36, getBoxFaceRects(16, 16, 8, 12, 4), baseMat, 0, -0.29, 0);
       if (hasSecondLayer) {
-        addPart(
-          torsoGroup,
-          0.72,
-          0.68,
-          0.42,
-          getBoxFaceRects(16, 32, 8, 12, 4),
-          overlayMat,
-          0,
-          -0.29,
-          0
-        );
+        addOverlayVoxels(torsoGroup, 16, 32, 8, 12, 4, 0.66, 0.62, 0.36, 0.032, 0, -0.29, 0);
       }
       rigGroup.add(torsoGroup);
 
@@ -504,13 +837,17 @@ export const Mojavatar3D: React.FC<Mojavatar3DProps> = ({
         0
       );
       if (hasSecondLayer) {
-        addPart(
+        addOverlayVoxels(
           rightArmPivot,
-          armW + 0.05,
-          armH + 0.05,
-          armD + 0.05,
-          getBoxFaceRects(40, 32, armTexW, 12, 4),
-          overlayMat,
+          40,
+          32,
+          armTexW,
+          12,
+          4,
+          armW,
+          armH,
+          armD,
+          0.03,
           0,
           -armH / 2 + 0.04,
           0
@@ -532,13 +869,17 @@ export const Mojavatar3D: React.FC<Mojavatar3DProps> = ({
         0
       );
       if (hasSecondLayer) {
-        addPart(
+        addOverlayVoxels(
           leftArmPivot,
-          armW + 0.05,
-          armH + 0.05,
-          armD + 0.05,
-          getBoxFaceRects(48, 48, armTexW, 12, 4),
-          overlayMat,
+          48,
+          48,
+          armTexW,
+          12,
+          4,
+          armW,
+          armH,
+          armD,
+          0.03,
           0,
           -armH / 2 + 0.04,
           0
@@ -546,14 +887,14 @@ export const Mojavatar3D: React.FC<Mojavatar3DProps> = ({
       }
       rigGroup.add(leftArmPivot);
 
-      // 4. Short Chibi Legs (dynamic walking stride)
+      // 4. Short Chibi Legs
       const legW = 0.31;
       const legH = 0.44;
       const legD = 0.34;
 
       const rightLegPivot = new THREE.Group();
       rightLegPivot.position.set(-0.165, -0.59, 0);
-      rightLegPivot.rotation.x = 0.22;
+      rightLegPivot.rotation.x = 0;
       addPart(
         rightLegPivot,
         legW,
@@ -566,13 +907,17 @@ export const Mojavatar3D: React.FC<Mojavatar3DProps> = ({
         0
       );
       if (hasSecondLayer) {
-        addPart(
+        addOverlayVoxels(
           rightLegPivot,
-          legW + 0.05,
-          legH + 0.05,
-          legD + 0.05,
-          getBoxFaceRects(0, 32, 4, 12, 4),
-          overlayMat,
+          0,
+          32,
+          4,
+          12,
+          4,
+          legW,
+          legH,
+          legD,
+          0.03,
           0,
           -legH / 2,
           0
@@ -582,7 +927,7 @@ export const Mojavatar3D: React.FC<Mojavatar3DProps> = ({
 
       const leftLegPivot = new THREE.Group();
       leftLegPivot.position.set(0.165, -0.59, 0);
-      leftLegPivot.rotation.x = -0.22;
+      leftLegPivot.rotation.x = 0;
       addPart(
         leftLegPivot,
         legW,
@@ -595,13 +940,17 @@ export const Mojavatar3D: React.FC<Mojavatar3DProps> = ({
         0
       );
       if (hasSecondLayer) {
-        addPart(
+        addOverlayVoxels(
           leftLegPivot,
-          legW + 0.05,
-          legH + 0.05,
-          legD + 0.05,
-          getBoxFaceRects(0, 48, 4, 12, 4),
-          overlayMat,
+          0,
+          48,
+          4,
+          12,
+          4,
+          legW,
+          legH,
+          legD,
+          0.03,
           0,
           -legH / 2,
           0
@@ -618,7 +967,9 @@ export const Mojavatar3D: React.FC<Mojavatar3DProps> = ({
       sceneRefs.current.baseMat = baseMat;
       sceneRefs.current.overlayMat = overlayMat;
       sceneRefs.current.characterMeshes = createdMeshes;
-      sceneRefs.current.popProgress = 0;
+      sceneRefs.current.popTime = 0;
+      sceneRefs.current.activeEmote = null;
+      sceneRefs.current.emoteTime = 0;
     };
 
     return () => {
@@ -637,9 +988,9 @@ export const Mojavatar3D: React.FC<Mojavatar3DProps> = ({
   return (
     <div
       ref={containerRef}
-      title="拖动可旋转查看 3D 角色"
+      title="点击触发小动作，拖动可旋转查看 3D 角色"
       style={{ filter: 'drop-shadow(0 12px 16px rgba(24, 22, 42, 0.45))' }}
-      className="h-full w-full cursor-grab select-none active:cursor-grabbing"
+      className="h-full w-full cursor-pointer select-none active:cursor-grabbing"
     />
   );
 };
