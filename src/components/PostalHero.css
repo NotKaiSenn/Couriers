@@ -1,5 +1,3 @@
-html.postal-parade-playing { overflow: hidden; }
-html.postal-parade-playing body { overflow-x: clip; }
 .postal-home { --ink: #2c273d; }
 
 .works-panel {
@@ -58,13 +56,14 @@ html.postal-parade-playing body { overflow-x: clip; }
   --nav: 4rem;
   --frame: calc(100vh - var(--nav));
   --frame: calc(100svh - var(--nav));
+  --poster-travel: calc(1.3 * var(--frame));
   --paper: #F5F6FB;
   --poster-opacity: 1;
   --intro-opacity: 0;
   position: relative;
   isolation: isolate;
   margin-top: var(--nav);
-  scroll-margin-top: calc(var(--nav) - 2 * var(--frame));
+  scroll-margin-top: calc(var(--nav) - var(--poster-travel));
   background: var(--ink);
 }
 
@@ -75,8 +74,7 @@ html.postal-parade-playing body { overflow-x: clip; }
 .postal-intro-track::after {
   content: '';
   display: block;
-  /* Two viewports for the reveal and one to hold the completed parade. */
-  height: calc(3 * var(--frame));
+  height: var(--poster-travel);
 }
 .postal-pin {
   position: sticky;

@@ -83,9 +83,8 @@ export function mountPostalScene(track: HTMLElement, stage: HTMLElement, canvas:
   let distance = 1;
   let current = 0;
   let target = 0;
-  let revealing = false;
   let paradeStep = paradeSeen ? 5 : 0;
-  let measured = false;
+  let paradeStarted = paradeSeen;
   const mascotFadeMs = 220;
   let drawnProgress = -1;
   let frame = 0;
@@ -106,16 +105,13 @@ export function mountPostalScene(track: HTMLElement, stage: HTMLElement, canvas:
     track.style.setProperty('--intro-opacity', String(clamp((posterProgress - 0.6) / 0.2)));
     track.toggleAttribute('data-hide-caption', current > 0.5);
     track.toggleAttribute('data-show-intro', reduced.matches || posterProgress > 0.6);
-    if (reduced.matches) paradeStep = 5;
-    if (revealing) {
-      paradeStep = Math.min(5, paradeStep + elapsed / mascotFadeMs);
-      if (paradeStep === 5) {
-        paradeSeen = true;
-        unlock();
-      }
+    if (posterProgress >= 0.8 || reduced.matches) paradeStarted = true;
+    if (paradeStarted && !paradeSeen) {
+      paradeStep = reduced.matches ? 5 : Math.min(5, paradeStep + elapsed / mascotFadeMs);
+      paradeSeen = paradeStep === 5;
     }
     track.style.setProperty('--parade-step', String(paradeStep));
-    if (current !== target || revealing) schedule();
+    if (current !== target || (paradeStarted && !paradeSeen)) schedule();
     else lastTime = 0;
   }
 
@@ -123,32 +119,8 @@ export function mountPostalScene(track: HTMLElement, stage: HTMLElement, canvas:
     if (!frame && !disposed) frame = requestAnimationFrame(paint);
   }
 
-  function unlock() {
-    if (!revealing) return;
-    revealing = false;
-    document.documentElement.classList.remove('postal-parade-playing');
-  }
-
-  function beginParade() {
-    paradeStep = 0;
-    revealing = true;
-    current = target = 0.78;
-    document.documentElement.classList.add('postal-parade-playing');
-    window.scrollTo({ top: start + distance * target, behavior: 'instant' });
-    schedule();
-  }
-
   function onScroll() {
     const next = reduced.matches ? 0 : clamp((window.scrollY - start) / distance);
-    if (revealing) {
-      const pinned = Math.round(start + distance * 0.78);
-      if (Math.abs(window.scrollY - pinned) > 1) window.scrollTo({ top: pinned, behavior: 'instant' });
-      return;
-    }
-    if (!paradeSeen && !reduced.matches && target < 0.65 && next >= 0.65) {
-      beginParade();
-      return;
-    }
     if (next === target) return;
     target = next;
     schedule();
@@ -186,12 +158,6 @@ export function mountPostalScene(track: HTMLElement, stage: HTMLElement, canvas:
     start = window.scrollY + track.getBoundingClientRect().top - parseFloat(getComputedStyle(track).marginTop);
     distance = 2 * height;
     current = target = reduced.matches ? 0 : clamp((window.scrollY - start) / distance);
-    if (reduced.matches) unlock();
-    if (!measured && !reduced.matches && target >= 0.65 && !paradeSeen) {
-      if (window.scrollY < start + height * 3) beginParade();
-      else paradeStep = 5;
-    }
-    measured = true;
     schedule();
   }
 
@@ -221,7 +187,6 @@ export function mountPostalScene(track: HTMLElement, stage: HTMLElement, canvas:
     }).catch(() => { /* The static poster remains visible if an image cannot load. */ });
   }
   return () => {
-    unlock();
     disposed = true;
     cancelAnimationFrame(frame);
     observer.disconnect();
