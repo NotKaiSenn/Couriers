@@ -1,0 +1,128 @@
+.postal-home { --ink: #2c273d; }
+
+.postal-tv { max-width: 1026px; }
+
+/* The 342 × 224 frame overlaps the 256 × 144 screen by one sprite pixel. */
+.postal-tv-screen {
+  position: absolute;
+  left: calc(100% * 16 / 342);
+  top: 25%;
+  width: calc(100% * 256 / 342);
+}
+
+.postal-hero {
+  --nav: 4rem;
+  --frame: calc(100vh - var(--nav));
+  --frame: calc(100svh - var(--nav));
+  --paper: #cfcfe5;
+  --poster-opacity: 1;
+  --intro-opacity: 0;
+  position: relative;
+  isolation: isolate;
+  margin-top: var(--nav);
+  background: var(--ink);
+}
+
+.postal-stage {
+  position: sticky;
+  top: var(--nav);
+  height: var(--frame);
+  overflow: hidden;
+  background: var(--ink);
+}
+
+.postal-stage::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 0 auto;
+  width: min(80vw, 900px);
+  background: url('/images/post-office/steam.webp') bottom right / contain no-repeat;
+  image-rendering: pixelated;
+  opacity: .34;
+}
+
+@media (min-width: 992px) {
+  .postal-stage::before { background-position: top right; }
+}
+
+.postal-poster, .postal-fallback, .postal-poster canvas {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  image-rendering: pixelated;
+}
+
+.postal-poster {
+  overflow: hidden;
+  background: var(--paper);
+  opacity: var(--poster-opacity);
+}
+
+.postal-fallback {
+  background: url('/images/post-office/district.webp') center top 36svh / min(80vw, 76svh) auto no-repeat;
+}
+.postal-fallback img {
+  position: absolute;
+  top: 11%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(72vw, 62svh);
+}
+.postal-poster canvas { max-width: none; opacity: 0; }
+.postal-stage[data-ready] canvas { opacity: 1; }
+.postal-stage[data-ready] .postal-fallback { display: none; }
+
+.postal-caption {
+  position: absolute;
+  inset: auto clamp(1rem, 3.5vw, 3.5rem) 1.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .75rem;
+  color: #302d41;
+  font-weight: 700;
+  font-size: .875rem;
+}
+.postal-caption p { letter-spacing: .065em; }
+.postal-hero[data-hide-caption] .postal-caption { visibility: hidden; }
+
+.postal-hero #about {
+  position: relative;
+  scroll-margin-top: calc(var(--nav) - var(--frame));
+  color: #f5f6fb;
+}
+.postal-hero #about::after {
+  content: '';
+  display: block;
+  /* Keep the completed parade in view for one more viewport of scrolling. */
+  height: calc(var(--frame) + var(--frame));
+}
+.postal-story {
+  position: sticky;
+  top: var(--nav);
+  align-content: center;
+  min-height: var(--frame);
+  padding-block: 3rem;
+  opacity: var(--intro-opacity);
+}
+.postal-hero:not([data-show-intro]) .postal-story { visibility: hidden; }
+.postal-parade {
+  display: block;
+  width: min(100%, 490px);
+  height: auto;
+  margin: auto;
+  image-rendering: pixelated;
+}
+
+@media (max-width: 640px) {
+  .postal-caption { display: none; }
+}
+@media (prefers-reduced-motion: reduce), (max-height: 32rem) {
+  .postal-stage { position: relative; top: 0; }
+  .postal-hero #about { scroll-margin-top: var(--nav); }
+  .postal-hero #about::after { display: none; }
+  .postal-hero .postal-story { position: relative; top: auto; visibility: visible; opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  html:has(.postal-hero) { scroll-behavior: auto; }
+}
