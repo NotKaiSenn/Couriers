@@ -38,9 +38,6 @@ export function PostalHero() {
               </div>
               <canvas ref={canvasRef} />
             </div>
-            <div className="postal-caption">
-              <p>Minecraft 地图创作团队</p>
-            </div>
           </section>
           <div className="postal-intro">
             <div className="postal-story mx-auto grid w-full max-w-6xl grid-cols-1 items-center gap-10 px-6 lg:grid-cols-2">

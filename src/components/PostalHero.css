@@ -129,20 +129,6 @@
 .postal-stage[data-ready] canvas { opacity: 1; }
 .postal-stage[data-ready] .postal-fallback { display: none; }
 
-.postal-caption {
-  position: absolute;
-  inset: auto clamp(1rem, 3.5vw, 3.5rem) 1.2rem;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: .75rem;
-  color: #302d41;
-  font-weight: 700;
-  font-size: .875rem;
-}
-.postal-caption p { letter-spacing: .065em; }
-.postal-hero[data-hide-caption] .postal-caption { visibility: hidden; }
-
 .postal-intro {
   position: relative;
   color: #f5f6fb;
@@ -164,9 +150,6 @@
   image-rendering: pixelated;
 }
 
-@media (max-width: 640px) {
-  .postal-caption { display: none; }
-}
 @media (max-width: 639px) and (orientation: portrait) {
   .postal-fallback {
     --unit: min(calc(100vw / 320), calc(var(--frame) / 465));

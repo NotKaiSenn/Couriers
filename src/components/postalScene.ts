@@ -103,7 +103,6 @@ export function mountPostalScene(track: HTMLElement, stage: HTMLElement, canvas:
     }
     track.style.setProperty('--poster-opacity', String(1 - clamp((posterProgress - 0.6) / 0.2)));
     track.style.setProperty('--intro-opacity', String(clamp((posterProgress - 0.6) / 0.2)));
-    track.toggleAttribute('data-hide-caption', current > 0.5);
     track.toggleAttribute('data-show-intro', reduced.matches || posterProgress > 0.6);
     if (posterProgress >= 0.8 || reduced.matches) paradeStarted = true;
     if (paradeStarted && !paradeSeen) {
