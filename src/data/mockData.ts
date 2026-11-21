@@ -111,7 +111,7 @@ export const PORTFOLIO_PROJECTS: BuildProject[] = [
     players: '1–2 人',
     version: 'Java 1.21.4',
     buildersCount: 9,
-    image: '/images/7B72BE4F12172E88A363666AF76CA9B7.png',
+    image: '/images/project-silent.jpg',
     summary:
       '一座停摆在午夜十二点的赤红剧场，失落乐章的碎片散落在错位的回忆与黑胶唱片之中。',
     story: [

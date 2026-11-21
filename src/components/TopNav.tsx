@@ -6,6 +6,7 @@ export type NavTab = 'home' | 'portfolio' | 'members' | 'join';
 interface TopNavProps {
   activeTab: NavTab;
   onSelectTab: (tab: NavTab) => void;
+  onPrefetchTab?: (tab: NavTab) => void;
 }
 
 const NAV_ITEMS: { id: NavTab; label: string }[] = [
@@ -18,6 +19,7 @@ const NAV_ITEMS: { id: NavTab; label: string }[] = [
 export const TopNav: React.FC<TopNavProps> = ({
   activeTab,
   onSelectTab,
+  onPrefetchTab,
 }) => {
   return (
     <nav className="fixed inset-x-0 top-0 z-40 h-16 bg-[#F5F6FB]">
@@ -29,16 +31,18 @@ export const TopNav: React.FC<TopNavProps> = ({
           className="flex min-h-11 min-w-11 shrink-0 items-center transition-opacity hover:opacity-80 focus-visible:outline-2 focus-visible:outline-[#69699F]"
           aria-label="寄语 Couriers 首页"
         >
-          <img
-            src="/images/couriers-envelope.svg"
-            alt="寄语 Couriers"
-            className="h-7 w-auto select-none sm:hidden"
-          />
-          <img
-            src="/images/couriers-bilingual-horizontal.svg"
-            alt="寄语 Couriers"
-            className="hidden h-8 w-auto select-none sm:block md:h-9"
-          />
+          <picture>
+            <source
+              media="(min-width: 640px)"
+              srcSet="/images/couriers-bilingual-horizontal.svg"
+            />
+            <img
+              src="/images/couriers-envelope.svg"
+              alt="寄语 Couriers"
+              decoding="async"
+              className="h-7 w-auto select-none sm:h-8 md:h-9"
+            />
+          </picture>
         </button>
 
         {/* Right Navigation Links */}
@@ -50,6 +54,8 @@ export const TopNav: React.FC<TopNavProps> = ({
                 key={item.id}
                 type="button"
                 onClick={() => onSelectTab(item.id)}
+                onMouseEnter={() => onPrefetchTab?.(item.id)}
+                onFocus={() => onPrefetchTab?.(item.id)}
                 className={`group relative inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center gap-0.5 py-1.5 text-sm font-semibold tracking-wider transition-colors sm:min-w-0 sm:text-base ${
                   active
                     ? 'text-[#69699F]'

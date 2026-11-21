@@ -1,13 +1,29 @@
-import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { lazy, Suspense, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { BuildProject } from './data/mockData';
 import { NavTab, TopNav } from './components/TopNav';
 import { LandingPage } from './components/LandingPage';
-import { PortfolioBentoView } from './components/PortfolioBentoView';
-import { MembersView } from './components/MembersView';
-import { JoinView } from './components/JoinView';
-import { ProjectDetailPage } from './components/ProjectDetailPage';
 import { Footer } from './components/Footer';
 import { PageTransition, TransitionPhase } from './components/PageTransition';
+
+const loadPortfolioView = () =>
+  import('./components/PortfolioBentoView').then((m) => ({ default: m.PortfolioBentoView }));
+const loadMembersView = () =>
+  import('./components/MembersView').then((m) => ({ default: m.MembersView }));
+const loadJoinView = () =>
+  import('./components/JoinView').then((m) => ({ default: m.JoinView }));
+const loadProjectDetailPage = () =>
+  import('./components/ProjectDetailPage').then((m) => ({ default: m.ProjectDetailPage }));
+
+const PortfolioBentoView = lazy(loadPortfolioView);
+const MembersView = lazy(loadMembersView);
+const JoinView = lazy(loadJoinView);
+const ProjectDetailPage = lazy(loadProjectDetailPage);
+
+function prefetchTab(tab: NavTab) {
+  if (tab === 'portfolio') void loadPortfolioView();
+  else if (tab === 'members') void loadMembersView();
+  else if (tab === 'join') void loadJoinView();
+}
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<NavTab>('home');
@@ -60,6 +76,8 @@ export default function App() {
       return;
     }
 
+    prefetchTab(tab);
+
     runPageTransition(() => {
       setActiveProject(null);
       setActiveTab(tab);
@@ -72,6 +90,8 @@ export default function App() {
     }
     const sourceTab = fromTab ?? (activeProject ? returnTab : activeTab);
 
+    void loadProjectDetailPage();
+
     runPageTransition(() => {
       setReturnTab(sourceTab);
       setActiveProject(project);
@@ -79,6 +99,8 @@ export default function App() {
   };
 
   const handleBackFromProject = () => {
+    prefetchTab(returnTab);
+
     runPageTransition(() => {
       setActiveProject(null);
       setActiveTab(returnTab);
@@ -90,32 +112,39 @@ export default function App() {
       <TopNav
         activeTab={activeProject ? 'portfolio' : activeTab}
         onSelectTab={handleSelectTab}
+        onPrefetchTab={prefetchTab}
       />
 
       <main className="flex-1">
-        {activeProject ? (
-          <ProjectDetailPage
-            project={activeProject}
-            onBack={handleBackFromProject}
-            onSelectProject={(next) => handleOpenProject(next)}
-          />
-        ) : activeTab === 'home' ? (
-          <LandingPage
-            onOpenProject={(project) => handleOpenProject(project, 'home')}
-            onGoPortfolio={() => handleSelectTab('portfolio')}
-            onGoMembers={() => handleSelectTab('members')}
-            onGoJoin={() => handleSelectTab('join')}
-          />
-        ) : activeTab === 'portfolio' ? (
-          <PortfolioBentoView
-            onOpenProject={(project) => handleOpenProject(project, 'portfolio')}
-            onGoMembers={() => handleSelectTab('members')}
-          />
-        ) : activeTab === 'members' ? (
-          <MembersView />
-        ) : (
-          <JoinView />
-        )}
+        <Suspense fallback={<div className="min-h-screen bg-[#f5f6fb]" />}>
+          {activeProject ? (
+            <ProjectDetailPage
+              project={activeProject}
+              onBack={handleBackFromProject}
+              onSelectProject={(next) => handleOpenProject(next)}
+            />
+          ) : activeTab === 'home' ? (
+            <LandingPage
+              onOpenProject={(project) => handleOpenProject(project, 'home')}
+              onGoPortfolio={() => handleSelectTab('portfolio')}
+              onGoMembers={() => handleSelectTab('members')}
+              onGoJoin={() => handleSelectTab('join')}
+              onPrefetchProjectDetail={() => void loadProjectDetailPage()}
+              onPrefetchPortfolio={() => prefetchTab('portfolio')}
+              onPrefetchMembers={() => prefetchTab('members')}
+              onPrefetchJoin={() => prefetchTab('join')}
+            />
+          ) : activeTab === 'portfolio' ? (
+            <PortfolioBentoView
+              onOpenProject={(project) => handleOpenProject(project, 'portfolio')}
+              onGoMembers={() => handleSelectTab('members')}
+            />
+          ) : activeTab === 'members' ? (
+            <MembersView />
+          ) : (
+            <JoinView />
+          )}
+        </Suspense>
       </main>
 
       <Footer />

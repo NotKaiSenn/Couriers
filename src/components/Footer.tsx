@@ -8,6 +8,10 @@ export const Footer: React.FC = () => {
           <img
             src="/images/couriers-bilingual-horizontal-light.svg"
             alt="寄语 Couriers"
+            width="258"
+            height="50"
+            loading="lazy"
+            decoding="async"
             className="h-8 w-auto select-none"
           />
         </div>

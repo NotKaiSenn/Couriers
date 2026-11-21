@@ -5,6 +5,7 @@ interface MinecraftHeadProps {
   avatarUrl: string;
   size?: number;
   className?: string;
+  loading?: 'lazy' | 'eager';
 }
 
 interface SkinPalette {
@@ -107,6 +108,7 @@ export const MinecraftHead: React.FC<MinecraftHeadProps> = ({
   avatarUrl,
   size = 36,
   className = '',
+  loading = 'lazy',
 }) => {
   const [imgFailed, setImgFailed] = useState(false);
 
@@ -125,6 +127,7 @@ export const MinecraftHead: React.FC<MinecraftHeadProps> = ({
           alt={seed}
           width={size}
           height={size}
+          loading={loading}
           decoding="async"
           onError={() => setImgFailed(true)}
           style={{ imageRendering: 'pixelated' }}

@@ -34,7 +34,14 @@ export function PostalHero() {
             <h1 id="postal-title" className="sr-only">寄语 Couriers</h1>
             <div className="postal-poster" aria-hidden="true">
               <div className="postal-fallback">
-                <img src="/images/post-office/masthead-outlined.svg" alt="" />
+                <img
+                  src="/images/post-office/masthead-outlined.svg"
+                  alt=""
+                  width="256"
+                  height="92"
+                  decoding="async"
+                  fetchPriority="high"
+                />
               </div>
               <canvas ref={canvasRef} />
             </div>

@@ -6,6 +6,7 @@ import {
   PORTFOLIO_PROJECTS,
 } from '../data/mockData';
 import { MinecraftHead } from './MinecraftHead';
+import { OptimizedImage } from './OptimizedImage';
 
 interface ProjectDetailPageProps {
   project: BuildProject;
@@ -31,10 +32,12 @@ export const ProjectDetailPage: React.FC<ProjectDetailPageProps> = ({
           project.id === 'silent-movement' ? 'bg-black' : 'bg-[#333144]'
         }`}
       >
-        <img
+        <OptimizedImage
           src={project.image}
           alt={project.title}
-          decoding="async"
+          loading="eager"
+          fetchPriority="high"
+          sizes="100vw"
           className={`h-full w-full ${
             project.id === 'silent-movement'
               ? 'object-contain pb-12 pt-14'
@@ -141,10 +144,11 @@ export const ProjectDetailPage: React.FC<ProjectDetailPageProps> = ({
             className="group flex w-full items-center justify-between gap-6 rounded-md border-2 border-[#CFCFE5] bg-[#f7f7fb] p-4 text-left transition hover:border-[#333144] hover:bg-white sm:p-5"
           >
             <div className="flex items-center gap-4">
-              <img
+              <OptimizedImage
                 src={nextProject.image}
                 alt={nextProject.title}
-                decoding="async"
+                loading="lazy"
+                sizes="96px"
                 className="h-16 w-24 rounded-[4px] object-cover"
               />
               <div>

@@ -701,6 +701,39 @@ export const Mojavatar3D: React.FC<Mojavatar3DProps> = ({
     sceneRefs.current.rigGroup = rigGroup;
     sceneRefs.current.shadowPlane = shadowPlane;
 
+    let rafId = 0;
+    let isNearViewport = false;
+    let isRunning = false;
+    let disposed = false;
+    const clock = new THREE.Clock();
+    const POP_DURATION = 0.72;
+
+    const syncLoop = () => {
+      const shouldRun = !disposed && isNearViewport && !document.hidden;
+      if (shouldRun && !isRunning) {
+        isRunning = true;
+        clock.getDelta();
+        rafId = requestAnimationFrame(animate);
+      } else if (!shouldRun && isRunning) {
+        isRunning = false;
+        cancelAnimationFrame(rafId);
+        rafId = 0;
+      }
+    };
+
+    // Pause WebGL rendering while scrolled off-screen or tab is hidden
+    const visibilityIo = new IntersectionObserver(
+      (entries) => {
+        isNearViewport = entries.some((entry) => entry.isIntersecting);
+        syncLoop();
+      },
+      { rootMargin: '120px 0px', threshold: 0 }
+    );
+    visibilityIo.observe(mount);
+
+    const handleVisibilityChange = () => syncLoop();
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
     // Trigger Q-bouncy entrance when scrolling into view the first time
     const io = new IntersectionObserver(
       (entries) => {
@@ -784,11 +817,8 @@ export const Mojavatar3D: React.FC<Mojavatar3DProps> = ({
     };
     window.addEventListener('resize', handleResize);
 
-    let rafId = 0;
-    const clock = new THREE.Clock();
-    const POP_DURATION = 0.72;
-
-    const animate = () => {
+    function animate() {
+      if (!isRunning || disposed) return;
       rafId = requestAnimationFrame(animate);
       const dt = Math.min(clock.getDelta(), 0.05);
       const t = clock.getElapsedTime();
@@ -967,12 +997,16 @@ export const Mojavatar3D: React.FC<Mojavatar3DProps> = ({
       }
 
       renderer.render(scene, camera);
-    };
-    animate();
+    }
+    syncLoop();
 
     return () => {
+      disposed = true;
+      isRunning = false;
       cancelAnimationFrame(rafId);
       io.disconnect();
+      visibilityIo.disconnect();
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener('resize', handleResize);
       mount.removeEventListener('pointerdown', handlePointerDown);
       mount.removeEventListener('pointermove', handlePointerMove);
@@ -1064,38 +1098,53 @@ export const Mojavatar3D: React.FC<Mojavatar3DProps> = ({
 
     let cancelled = false;
     const timers: number[] = [];
+    const idleIds: number[] = [];
     const queue = preloadSkinUrls.filter(
       (url) => url !== skinUrl && !refs.rigCache.has(url) && !refs.buildingUrls.has(url)
     );
 
+    const scheduleIdle = (fn: () => void) => {
+      if ('requestIdleCallback' in window) {
+        const id = window.requestIdleCallback(fn, { timeout: 1500 });
+        idleIds.push(id);
+      } else {
+        fn();
+      }
+    };
+
     queue.forEach((url, idx) => {
       const timerId = window.setTimeout(() => {
-        if (cancelled || !refs.rigGroup || refs.rigCache.has(url) || refs.buildingUrls.has(url)) {
-          return;
-        }
-        refs.buildingUrls.add(url);
-        loadNormalizedSkin(url)
-          .then((skin) => {
-            refs.buildingUrls.delete(url);
-            if (cancelled || !refs.rigGroup || refs.rigCache.has(url)) return;
-            const rig = buildCharacterRig(skin);
-            rig.group.visible = false;
-            refs.rigGroup.add(rig.group);
-            refs.rigCache.set(url, rig);
-            if (refs.desiredSkinUrl === url) {
-              activateRig(url, rig);
-            }
-          })
-          .catch(() => {
-            refs.buildingUrls.delete(url);
-          });
-      }, 180 + idx * 90);
+        scheduleIdle(() => {
+          if (cancelled || !refs.rigGroup || refs.rigCache.has(url) || refs.buildingUrls.has(url)) {
+            return;
+          }
+          refs.buildingUrls.add(url);
+          loadNormalizedSkin(url)
+            .then((skin) => {
+              refs.buildingUrls.delete(url);
+              if (cancelled || !refs.rigGroup || refs.rigCache.has(url)) return;
+              const rig = buildCharacterRig(skin);
+              rig.group.visible = false;
+              refs.rigGroup.add(rig.group);
+              refs.rigCache.set(url, rig);
+              if (refs.desiredSkinUrl === url) {
+                activateRig(url, rig);
+              }
+            })
+            .catch(() => {
+              refs.buildingUrls.delete(url);
+            });
+        });
+      }, 240 + idx * 120);
       timers.push(timerId);
     });
 
     return () => {
       cancelled = true;
       timers.forEach((id) => window.clearTimeout(id));
+      if ('cancelIdleCallback' in window) {
+        idleIds.forEach((id) => window.cancelIdleCallback(id));
+      }
     };
   }, [preloadSkinUrls, webglFailed]);
 

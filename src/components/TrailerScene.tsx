@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { OptimizedImage } from './OptimizedImage';
 import './TrailerScene.css';
 
 const SCREEN_WIDTH = 256;
@@ -55,7 +56,11 @@ export function TrailerScene() {
       if (!entry.isIntersecting) return;
       observer.disconnect();
       try {
-        await screen.querySelector('img')?.decode();
+        const img = screen.querySelector('img');
+        if (img) {
+          if (!img.complete) img.loading = 'eager';
+          await img.decode();
+        }
       } catch {
         if (mounted) showTrailer();
         return;
@@ -104,11 +109,13 @@ export function TrailerScene() {
             />
           )}
           <span className="trailer-picture absolute inset-0" onAnimationEnd={showTrailer}>
-            <img
-              src="/images/7B72BE4F12172E88A363666AF76CA9B7.png"
+            <OptimizedImage
+              src="/images/project-silent.jpg"
               alt=""
-              width="1280"
-              height="720"
+              width={1280}
+              height={720}
+              loading="lazy"
+              sizes="(min-width: 1024px) 768px, 75vw"
               className="h-full w-full object-cover"
             />
             <span className="absolute inset-0 m-auto grid size-14 place-items-center rounded-md border-2 border-white bg-black/70 text-white sm:size-20">
@@ -122,6 +129,8 @@ export function TrailerScene() {
           alt=""
           width="342"
           height="224"
+          loading="lazy"
+          decoding="async"
         />
       </div>
     </section>

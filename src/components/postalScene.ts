@@ -3,14 +3,49 @@ export const paradeImage = '/images/post-office/mail-outlined.png';
 const artFiles = {
   letterBalloons: '/images/post-office/letter-balloons.png',
   sageBalloon: '/images/post-office/sage-balloon.png',
-  sky: '/images/post-office/sky.webp',
-  cloud: '/images/post-office/cloud.webp',
-  district: '/images/post-office/district.webp',
-  steam: '/images/post-office/steam.webp',
+  sky: '/images/post-office/sky.png',
+  cloud: '/images/post-office/cloud.png',
+  district: '/images/post-office/district.png',
+  steam: '/images/post-office/steam.png',
   title: '/images/post-office/masthead-outlined.svg',
 } as const;
 
+const highPriorityArt = new Set<keyof typeof artFiles>(['district', 'sky', 'title']);
+
 type Artwork = Record<keyof typeof artFiles, HTMLImageElement>;
+
+let cachedArtwork: Artwork | null = null;
+let artworkPromise: Promise<Artwork> | null = null;
+
+function loadArtwork(): Promise<Artwork> {
+  if (cachedArtwork) return Promise.resolve(cachedArtwork);
+  if (artworkPromise) return artworkPromise;
+
+  const entries = (Object.entries(artFiles) as [keyof typeof artFiles, string][]).map(
+    async ([name, file]) => {
+      const img = new Image();
+      img.decoding = 'async';
+      if (highPriorityArt.has(name)) {
+        img.fetchPriority = 'high';
+      }
+      img.src = file;
+      await img.decode();
+      return [name, img] as const;
+    }
+  );
+
+  artworkPromise = Promise.all(entries)
+    .then((images) => {
+      cachedArtwork = Object.fromEntries(images) as Artwork;
+      return cachedArtwork;
+    })
+    .catch((err) => {
+      artworkPromise = null;
+      throw err;
+    });
+
+  return artworkPromise;
+}
 type Frame = { width: number; height: number; samplesPerUnit: number; phonePortrait: boolean };
 
 const clamp = (value: number) => Math.max(0, Math.min(1, value));
@@ -77,7 +112,10 @@ export function mountPostalScene(track: HTMLElement, stage: HTMLElement, canvas:
   const ctx = canvas.getContext('2d', { alpha: false });
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce), (max-height: 32rem) and (pointer: fine)');
   let disposed = false;
-  let art: Artwork | undefined;
+  let art: Artwork | undefined = cachedArtwork ?? undefined;
+  if (art) {
+    stage.setAttribute('data-ready', '');
+  }
   let layout: Frame = { width: 0, height: 0, samplesPerUnit: 1, phonePortrait: false };
   let start = 0;
   let distance = 1;
@@ -171,16 +209,10 @@ export function mountPostalScene(track: HTMLElement, stage: HTMLElement, canvas:
   }
   measure();
 
-  if (ctx) {
-    const entries = Object.entries(artFiles).map(async ([name, file]) => {
-      const img = new Image();
-      img.src = file;
-      await img.decode();
-      return [name, img] as const;
-    });
-    Promise.all(entries).then(images => {
+  if (ctx && !art) {
+    loadArtwork().then((images) => {
       if (disposed) return;
-      art = Object.fromEntries(images) as Artwork;
+      art = images;
       schedule();
       stage.setAttribute('data-ready', '');
     }).catch(() => { /* The static poster remains visible if an image cannot load. */ });

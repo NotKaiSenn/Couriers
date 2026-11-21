@@ -4,6 +4,7 @@ import {
   getMemberById,
   PORTFOLIO_PROJECTS,
 } from '../data/mockData';
+import { OptimizedImage } from './OptimizedImage';
 
 interface PortfolioBentoViewProps {
   onOpenProject: (project: BuildProject) => void;
@@ -38,9 +39,13 @@ export const PortfolioBentoView: React.FC<PortfolioBentoViewProps> = ({
       <div className="mx-auto max-w-6xl px-6">
         {/* Top Full-Width Editorial Banner */}
         <div className="relative mb-7 overflow-hidden rounded-md border-2 border-[#333144] bg-[#333144]">
-          <div
-            className="absolute inset-0 bg-cover bg-center opacity-50"
-            style={{ backgroundImage: "url('/images/hero-banner.jpg')" }}
+          <OptimizedImage
+            src="/images/hero-banner.jpg"
+            alt=""
+            loading="eager"
+            fetchPriority="high"
+            sizes="(min-width: 1152px) 1152px, 100vw"
+            className="absolute inset-0 h-full w-full object-cover opacity-50"
           />
           <div className="absolute inset-0 bg-gradient-to-r from-[#333144]/95 via-[#333144]/75 to-[#69699F]/35" />
 
@@ -103,10 +108,16 @@ export const PortfolioBentoView: React.FC<PortfolioBentoViewProps> = ({
                     : 'min-h-[250px]'
                 }`}
               >
-                <img
+                <OptimizedImage
                   src={project.image}
                   alt={project.title}
-                  decoding="async"
+                  loading={index < 2 ? 'eager' : 'lazy'}
+                  fetchPriority={index === 0 ? 'high' : undefined}
+                  sizes={
+                    isFullWidthLast
+                      ? '(min-width: 1152px) 1104px, 100vw'
+                      : '(min-width: 768px) 542px, 100vw'
+                  }
                   className={`absolute left-0 right-0 top-0 w-full transition-transform duration-500 group-hover:scale-105 ${
                     isSilentArtwork
                       ? 'h-[82%] object-contain object-center px-4 pt-3'

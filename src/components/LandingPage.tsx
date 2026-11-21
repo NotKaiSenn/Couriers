@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import {
   ArrowLeft,
   ArrowRight,
@@ -13,10 +13,16 @@ import {
 } from '../data/mockData';
 import { useReveal } from '../hooks/useReveal';
 import { MinecraftHead } from './MinecraftHead';
-import { Mojavatar3D } from './Mojavatar3D';
+import { OptimizedImage } from './OptimizedImage';
 import { PixelDivider } from './PixelDivider';
 import { PostalHero } from './PostalHero';
 import './MemberShowcase.css';
+
+const loadMojavatar3D = () =>
+  import('./Mojavatar3D').then((m) => ({ default: m.Mojavatar3D }));
+const Mojavatar3D = lazy(loadMojavatar3D);
+
+let mojavatarLoadedOnce = false;
 
 const ALL_MEMBER_SKIN_URLS = TEAM_MEMBERS.map((m) => m.skinUrl);
 
@@ -25,6 +31,10 @@ interface LandingPageProps {
   onGoPortfolio: () => void;
   onGoMembers: () => void;
   onGoJoin: () => void;
+  onPrefetchProjectDetail?: () => void;
+  onPrefetchPortfolio?: () => void;
+  onPrefetchMembers?: () => void;
+  onPrefetchJoin?: () => void;
 }
 
 export const LandingPage: React.FC<LandingPageProps> = ({
@@ -32,10 +42,40 @@ export const LandingPage: React.FC<LandingPageProps> = ({
   onGoPortfolio,
   onGoMembers,
   onGoJoin,
+  onPrefetchProjectDetail,
+  onPrefetchPortfolio,
+  onPrefetchMembers,
+  onPrefetchJoin,
 }) => {
   const worksReveal = useReveal<HTMLDivElement>(0.12);
   const castReveal = useReveal<HTMLDivElement>(0.12);
   const joinReveal = useReveal<HTMLDivElement>(0.15);
+
+  const portraitRef = useRef<HTMLDivElement | null>(null);
+  const [shouldLoad3D, setShouldLoad3D] = useState(mojavatarLoadedOnce);
+
+  useEffect(() => {
+    if (shouldLoad3D) return;
+    const el = portraitRef.current;
+    if (!el) return;
+    if (!('IntersectionObserver' in window)) {
+      mojavatarLoadedOnce = true;
+      setShouldLoad3D(true);
+      return;
+    }
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((entry) => entry.isIntersecting)) {
+          mojavatarLoadedOnce = true;
+          setShouldLoad3D(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin: '500px 0px' }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [shouldLoad3D]);
 
   const trackRef = useRef<HTMLDivElement | null>(null);
   const [slidePage, setSlidePage] = useState(0);
@@ -138,13 +178,15 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               <article
                 key={project.id}
                 onClick={() => onOpenProject(project)}
+                onMouseEnter={onPrefetchProjectDetail}
                 className="group w-[82vw] shrink-0 snap-start cursor-pointer sm:w-[calc((100%-3rem)/3)]"
               >
                 <div className="aspect-square w-full overflow-hidden rounded-md border-2 border-[#CFCFE5]/25 bg-[#333144] transition-colors group-hover:border-[#8F99D2]">
-                  <img
+                  <OptimizedImage
                     src={project.image}
                     alt={project.title}
-                    decoding="async"
+                    loading="lazy"
+                    sizes="(min-width: 640px) 360px, 82vw"
                     className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                   />
                 </div>
@@ -165,6 +207,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             <button
               type="button"
               onClick={onGoPortfolio}
+              onMouseEnter={onPrefetchPortfolio}
+              onFocus={onPrefetchPortfolio}
               className="inline-flex items-center gap-2 rounded-md border-2 border-white/80 px-7 py-3 text-sm font-bold tracking-wider text-white transition hover:bg-[#F5F6FB] hover:text-[#333144]"
             >
               <span>全部作品</span>
@@ -215,13 +259,35 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                 />
               </svg>
 
-              <div className="relative z-10 h-full w-full">
-                <Mojavatar3D
-                  mcId={activeMember.mcId}
-                  skinUrl={activeMember.skinUrl}
-                  avatarUrl={activeMember.avatarUrl}
-                  preloadSkinUrls={ALL_MEMBER_SKIN_URLS}
-                />
+              <div ref={portraitRef} className="relative z-10 h-full w-full">
+                {shouldLoad3D ? (
+                  <Suspense
+                    fallback={
+                      <div className="flex h-full w-full items-center justify-center">
+                        <MinecraftHead
+                          seed={activeMember.mcId}
+                          avatarUrl={activeMember.avatarUrl}
+                          size={140}
+                        />
+                      </div>
+                    }
+                  >
+                    <Mojavatar3D
+                      mcId={activeMember.mcId}
+                      skinUrl={activeMember.skinUrl}
+                      avatarUrl={activeMember.avatarUrl}
+                      preloadSkinUrls={ALL_MEMBER_SKIN_URLS}
+                    />
+                  </Suspense>
+                ) : (
+                  <div className="flex h-full w-full items-center justify-center">
+                    <MinecraftHead
+                      seed={activeMember.mcId}
+                      avatarUrl={activeMember.avatarUrl}
+                      size={140}
+                    />
+                  </div>
+                )}
               </div>
             </div>
 
@@ -276,6 +342,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             <button
               type="button"
               onClick={onGoMembers}
+              onMouseEnter={onPrefetchMembers}
+              onFocus={onPrefetchMembers}
               className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-md border-2 border-[#333144] bg-[#333144] px-7 py-3 text-sm font-bold text-white shadow-md shadow-[#333144]/15 transition hover:border-[#69699F] hover:bg-[#69699F] lg:w-auto"
             >
               <span>查看全部 {TEAM_MEMBERS.length} 位成员</span>
@@ -305,6 +373,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               <button
                 type="button"
                 onClick={onGoJoin}
+                onMouseEnter={onPrefetchJoin}
+                onFocus={onPrefetchJoin}
                 className="inline-flex items-center gap-1.5 rounded-md border-2 border-white bg-[#69699F] px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-[#8F99D2]"
               >
                 <span>加入我们</span>
@@ -318,6 +388,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             alt="寄语 Couriers"
             width="360"
             height="204"
+            loading="lazy"
             decoding="async"
             style={{ imageRendering: 'pixelated' }}
             className="h-auto w-full max-w-[360px] select-none"
