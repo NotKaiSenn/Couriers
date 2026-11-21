@@ -74,7 +74,8 @@
 .postal-intro-track::after {
   content: '';
   display: block;
-  height: var(--poster-travel);
+  /* Keep the finished intro in view for one more screen of native scrolling. */
+  height: calc(var(--poster-travel) + var(--frame));
 }
 .postal-pin {
   position: sticky;
