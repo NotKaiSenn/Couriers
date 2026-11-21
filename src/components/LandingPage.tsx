@@ -17,6 +17,8 @@ import { MinecraftHead } from './MinecraftHead';
 import { Mojavatar3D } from './Mojavatar3D';
 import { PixelDivider } from './PixelDivider';
 
+const ALL_MEMBER_SKIN_URLS = TEAM_MEMBERS.map((m) => m.skinUrl);
+
 interface LandingPageProps {
   onOpenProject: (project: BuildProject) => void;
   onGoPortfolio: () => void;
@@ -504,6 +506,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                   mcId={activeMember.mcId}
                   skinUrl={activeMember.skinUrl}
                   avatarUrl={activeMember.avatarUrl}
+                  preloadSkinUrls={ALL_MEMBER_SKIN_URLS}
                 />
               </div>
             </div>

@@ -6,6 +6,7 @@ interface Mojavatar3DProps {
   mcId: string;
   skinUrl: string;
   avatarUrl?: string;
+  preloadSkinUrls?: string[];
 }
 
 type FaceRect = [x: number, y: number, w: number, h: number];
@@ -251,6 +252,302 @@ const EMOTE_DURATION: Record<ClickEmote, number> = {
   happyDance: 1.15,
 };
 
+interface NormalizedSkin {
+  canvas: HTMLCanvasElement;
+  imgData: ImageData;
+  isSlim: boolean;
+  hasSecondLayer: boolean;
+}
+
+interface BuiltCharacterRig {
+  group: THREE.Group;
+  headPivot: THREE.Group;
+  leftArmPivot: THREE.Group;
+  rightArmPivot: THREE.Group;
+  leftLegPivot: THREE.Group;
+  rightLegPivot: THREE.Group;
+  texture: THREE.CanvasTexture;
+  baseMat: THREE.MeshStandardMaterial;
+  overlayMat: THREE.MeshStandardMaterial;
+  geometries: THREE.BufferGeometry[];
+}
+
+const skinDataCache = new Map<string, Promise<NormalizedSkin>>();
+
+function loadNormalizedSkin(skinUrl: string): Promise<NormalizedSkin> {
+  const cached = skinDataCache.get(skinUrl);
+  if (cached) return cached;
+
+  const promise = new Promise<NormalizedSkin>((resolve, reject) => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => {
+      const { canvas, isSlim, hasSecondLayer } = normalizeSkin(img);
+      const imgData = canvas.getContext('2d')!.getImageData(0, 0, 64, 64);
+      resolve({ canvas, imgData, isSlim, hasSecondLayer });
+    };
+    img.onerror = (err) => {
+      skinDataCache.delete(skinUrl);
+      reject(err);
+    };
+    img.src = skinUrl;
+  });
+
+  skinDataCache.set(skinUrl, promise);
+  return promise;
+}
+
+function buildCharacterRig(skin: NormalizedSkin): BuiltCharacterRig {
+  const { canvas, imgData, isSlim, hasSecondLayer } = skin;
+  const group = new THREE.Group();
+
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.magFilter = THREE.NearestFilter;
+  texture.minFilter = THREE.NearestFilter;
+  texture.colorSpace = THREE.SRGBColorSpace;
+  texture.flipY = false;
+  texture.needsUpdate = true;
+
+  const baseMat = new THREE.MeshStandardMaterial({
+    map: texture,
+    roughness: 0.72,
+    metalness: 0.02,
+  });
+
+  const overlayMat = new THREE.MeshStandardMaterial({
+    vertexColors: true,
+    roughness: 0.72,
+    metalness: 0.02,
+  });
+
+  const geometries: THREE.BufferGeometry[] = [];
+  const addPart = (
+    parent: THREE.Group,
+    w: number,
+    h: number,
+    d: number,
+    faceRects: [FaceRect, FaceRect, FaceRect, FaceRect, FaceRect, FaceRect],
+    mat: THREE.Material,
+    x: number,
+    y: number,
+    z: number
+  ) => {
+    const geom = applyMinecraftUVs(new THREE.BoxGeometry(w, h, d), faceRects);
+    const mesh = new THREE.Mesh(geom, mat);
+    mesh.position.set(x, y, z);
+    mesh.castShadow = true;
+    mesh.receiveShadow = true;
+    parent.add(mesh);
+    geometries.push(geom);
+  };
+
+  const addOverlayVoxels = (
+    parent: THREE.Group,
+    texX: number,
+    texY: number,
+    texW: number,
+    texH: number,
+    texD: number,
+    w: number,
+    h: number,
+    d: number,
+    thickness: number,
+    x: number,
+    y: number,
+    z: number
+  ) => {
+    const geom = createOverlayVoxelGeometry(
+      imgData,
+      texX,
+      texY,
+      texW,
+      texH,
+      texD,
+      w,
+      h,
+      d,
+      thickness
+    );
+    if (!geom) return;
+    const mesh = new THREE.Mesh(geom, overlayMat);
+    mesh.position.set(x, y, z);
+    mesh.castShadow = true;
+    mesh.receiveShadow = true;
+    parent.add(mesh);
+    geometries.push(geom);
+  };
+
+  // 1. Head + Hat Voxel Overlay (centered around y = +0.50)
+  const headPivot = new THREE.Group();
+  headPivot.position.set(0, 0.02, 0);
+  addPart(headPivot, 1.0, 1.0, 1.0, getBoxFaceRects(0, 0, 8, 8, 8), baseMat, 0, 0.5, 0);
+  addOverlayVoxels(headPivot, 32, 0, 8, 8, 8, 1.0, 1.0, 1.0, 0.055, 0, 0.5, 0);
+  group.add(headPivot);
+
+  // 2. Chibi Torso (y: -0.60 .. +0.02)
+  const torsoGroup = new THREE.Group();
+  addPart(torsoGroup, 0.66, 0.62, 0.36, getBoxFaceRects(16, 16, 8, 12, 4), baseMat, 0, -0.29, 0);
+  if (hasSecondLayer) {
+    addOverlayVoxels(torsoGroup, 16, 32, 8, 12, 4, 0.66, 0.62, 0.36, 0.032, 0, -0.29, 0);
+  }
+  group.add(torsoGroup);
+
+  // 3. Chibi Arms (supports both 3px slim Alex and 4px classic Steve)
+  const armTexW = isSlim ? 3 : 4;
+  const armW = isSlim ? 0.21 : 0.26;
+  const armH = 0.56;
+  const armD = 0.29;
+  const armOffsetX = 0.33 + armW / 2;
+
+  const rightArmPivot = new THREE.Group();
+  rightArmPivot.position.set(-armOffsetX, -0.02, 0);
+  addPart(
+    rightArmPivot,
+    armW,
+    armH,
+    armD,
+    getBoxFaceRects(40, 16, armTexW, 12, 4),
+    baseMat,
+    0,
+    -armH / 2 + 0.04,
+    0
+  );
+  if (hasSecondLayer) {
+    addOverlayVoxels(
+      rightArmPivot,
+      40,
+      32,
+      armTexW,
+      12,
+      4,
+      armW,
+      armH,
+      armD,
+      0.03,
+      0,
+      -armH / 2 + 0.04,
+      0
+    );
+  }
+  group.add(rightArmPivot);
+
+  const leftArmPivot = new THREE.Group();
+  leftArmPivot.position.set(armOffsetX, -0.02, 0);
+  addPart(
+    leftArmPivot,
+    armW,
+    armH,
+    armD,
+    getBoxFaceRects(32, 48, armTexW, 12, 4),
+    baseMat,
+    0,
+    -armH / 2 + 0.04,
+    0
+  );
+  if (hasSecondLayer) {
+    addOverlayVoxels(
+      leftArmPivot,
+      48,
+      48,
+      armTexW,
+      12,
+      4,
+      armW,
+      armH,
+      armD,
+      0.03,
+      0,
+      -armH / 2 + 0.04,
+      0
+    );
+  }
+  group.add(leftArmPivot);
+
+  // 4. Short Chibi Legs
+  const legW = 0.31;
+  const legH = 0.44;
+  const legD = 0.34;
+
+  const rightLegPivot = new THREE.Group();
+  rightLegPivot.position.set(-0.165, -0.59, 0);
+  rightLegPivot.rotation.x = 0;
+  addPart(
+    rightLegPivot,
+    legW,
+    legH,
+    legD,
+    getBoxFaceRects(0, 16, 4, 12, 4),
+    baseMat,
+    0,
+    -legH / 2,
+    0
+  );
+  if (hasSecondLayer) {
+    addOverlayVoxels(
+      rightLegPivot,
+      0,
+      32,
+      4,
+      12,
+      4,
+      legW,
+      legH,
+      legD,
+      0.03,
+      0,
+      -legH / 2,
+      0
+    );
+  }
+  group.add(rightLegPivot);
+
+  const leftLegPivot = new THREE.Group();
+  leftLegPivot.position.set(0.165, -0.59, 0);
+  leftLegPivot.rotation.x = 0;
+  addPart(
+    leftLegPivot,
+    legW,
+    legH,
+    legD,
+    getBoxFaceRects(16, 48, 4, 12, 4),
+    baseMat,
+    0,
+    -legH / 2,
+    0
+  );
+  if (hasSecondLayer) {
+    addOverlayVoxels(
+      leftLegPivot,
+      0,
+      48,
+      4,
+      12,
+      4,
+      legW,
+      legH,
+      legD,
+      0.03,
+      0,
+      -legH / 2,
+      0
+    );
+  }
+  group.add(leftLegPivot);
+
+  return {
+    group,
+    headPivot,
+    leftArmPivot,
+    rightArmPivot,
+    leftLegPivot,
+    rightLegPivot,
+    texture,
+    baseMat,
+    overlayMat,
+    geometries,
+  };
+}
+
 /**
  * Interactive 3D Chibi Mojavatar renderer powered by Three.js and real 64x64/64x32 Minecraft skins.
  */
@@ -258,11 +555,12 @@ export const Mojavatar3D: React.FC<Mojavatar3DProps> = ({
   mcId,
   skinUrl,
   avatarUrl,
+  preloadSkinUrls,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [webglFailed, setWebglFailed] = useState(false);
 
-  // Persist user drag/hover rotation cleanly without recreating WebGL context on skin swap
+  // Persist user drag/hover rotation & prebuilt 3D rigs without recreating WebGL context on skin swap
   const sceneRefs = useRef<{
     rootGroup: THREE.Group | null;
     rigGroup: THREE.Group | null;
@@ -272,10 +570,10 @@ export const Mojavatar3D: React.FC<Mojavatar3DProps> = ({
     rightArmPivot: THREE.Group | null;
     leftLegPivot: THREE.Group | null;
     rightLegPivot: THREE.Group | null;
-    texture: THREE.CanvasTexture | null;
-    characterMeshes: THREE.Object3D[];
-    baseMat: THREE.MeshStandardMaterial | null;
-    overlayMat: THREE.MeshStandardMaterial | null;
+    rigCache: Map<string, BuiltCharacterRig>;
+    buildingUrls: Set<string>;
+    activeSkinUrl: string;
+    desiredSkinUrl: string;
     targetYaw: number;
     targetPitch: number;
     popTime: number;
@@ -292,10 +590,10 @@ export const Mojavatar3D: React.FC<Mojavatar3DProps> = ({
     rightArmPivot: null,
     leftLegPivot: null,
     rightLegPivot: null,
-    texture: null,
-    characterMeshes: [],
-    baseMat: null,
-    overlayMat: null,
+    rigCache: new Map(),
+    buildingUrls: new Set(),
+    activeSkinUrl: '',
+    desiredSkinUrl: skinUrl,
     targetYaw: 0.34,
     targetPitch: 0.08,
     popTime: 0,
@@ -681,12 +979,15 @@ export const Mojavatar3D: React.FC<Mojavatar3DProps> = ({
       mount.removeEventListener('pointerup', handlePointerUp);
       mount.removeEventListener('pointerleave', handlePointerLeave);
 
-      sceneRefs.current.characterMeshes.forEach((obj) => {
-        if (obj instanceof THREE.Mesh) obj.geometry.dispose();
+      sceneRefs.current.rigCache.forEach((rig) => {
+        rig.geometries.forEach((g) => g.dispose());
+        rig.baseMat.dispose();
+        rig.overlayMat.dispose();
+        rig.texture.dispose();
       });
-      sceneRefs.current.baseMat?.dispose();
-      sceneRefs.current.overlayMat?.dispose();
-      sceneRefs.current.texture?.dispose();
+      sceneRefs.current.rigCache.clear();
+      sceneRefs.current.buildingUrls.clear();
+      sceneRefs.current.activeSkinUrl = '';
       shadowReceiver.geometry.dispose();
       (shadowReceiver.material as THREE.Material).dispose();
       shadowPlane.geometry.dispose();
@@ -696,286 +997,107 @@ export const Mojavatar3D: React.FC<Mojavatar3DProps> = ({
     };
   }, []);
 
-  // Load & rebuild chibi Mojavatar rig whenever skinUrl changes
+  // Activate a prebuilt rig instantaneously (0ms swap, no geometry rebuild)
+  const activateRig = (url: string, rig: BuiltCharacterRig) => {
+    const refs = sceneRefs.current;
+    if (refs.activeSkinUrl && refs.activeSkinUrl !== url) {
+      const prev = refs.rigCache.get(refs.activeSkinUrl);
+      if (prev) prev.group.visible = false;
+    }
+    rig.group.visible = true;
+    refs.activeSkinUrl = url;
+    refs.headPivot = rig.headPivot;
+    refs.leftArmPivot = rig.leftArmPivot;
+    refs.rightArmPivot = rig.rightArmPivot;
+    refs.leftLegPivot = rig.leftLegPivot;
+    refs.rightLegPivot = rig.rightLegPivot;
+    refs.popTime = 0;
+    refs.activeEmote = null;
+    refs.emoteTime = 0;
+  };
+
+  // Switch active chibi Mojavatar rig whenever skinUrl changes
   useEffect(() => {
-    const rigGroup = sceneRefs.current.rigGroup;
+    const refs = sceneRefs.current;
+    const rigGroup = refs.rigGroup;
+    refs.desiredSkinUrl = skinUrl;
     if (!rigGroup || webglFailed) return;
 
+    const cached = refs.rigCache.get(skinUrl);
+    if (cached) {
+      if (refs.activeSkinUrl !== skinUrl) {
+        activateRig(skinUrl, cached);
+      }
+      return;
+    }
+
     let cancelled = false;
-    const img = new Image();
-    img.crossOrigin = 'anonymous';
-    img.src = skinUrl;
-
-    img.onload = () => {
-      if (cancelled || !sceneRefs.current.rigGroup) return;
-
-      const { canvas, isSlim, hasSecondLayer } = normalizeSkin(img);
-      const texture = new THREE.CanvasTexture(canvas);
-      texture.magFilter = THREE.NearestFilter;
-      texture.minFilter = THREE.NearestFilter;
-      texture.colorSpace = THREE.SRGBColorSpace;
-      texture.flipY = false;
-      texture.needsUpdate = true;
-
-      // Clear previous character meshes cleanly
-      while (rigGroup.children.length > 0) {
-        const child = rigGroup.children[0];
-        rigGroup.remove(child);
-      }
-      sceneRefs.current.characterMeshes.forEach((obj) => {
-        if (obj instanceof THREE.Mesh) obj.geometry.dispose();
+    refs.buildingUrls.add(skinUrl);
+    loadNormalizedSkin(skinUrl)
+      .then((skin) => {
+        refs.buildingUrls.delete(skinUrl);
+        if (cancelled || !refs.rigGroup) return;
+        let rig = refs.rigCache.get(skinUrl);
+        if (!rig) {
+          rig = buildCharacterRig(skin);
+          rig.group.visible = false;
+          refs.rigGroup.add(rig.group);
+          refs.rigCache.set(skinUrl, rig);
+        }
+        if (refs.desiredSkinUrl === skinUrl) {
+          activateRig(skinUrl, rig);
+        }
+      })
+      .catch(() => {
+        refs.buildingUrls.delete(skinUrl);
       });
-      sceneRefs.current.baseMat?.dispose();
-      sceneRefs.current.overlayMat?.dispose();
-      sceneRefs.current.texture?.dispose();
-
-      const baseMat = new THREE.MeshStandardMaterial({
-        map: texture,
-        roughness: 0.72,
-        metalness: 0.02,
-      });
-
-      const overlayMat = new THREE.MeshStandardMaterial({
-        vertexColors: true,
-        roughness: 0.72,
-        metalness: 0.02,
-      });
-      const skinCtx = canvas.getContext('2d')!;
-      const skinImgData = skinCtx.getImageData(0, 0, 64, 64);
-
-      const createdMeshes: THREE.Object3D[] = [];
-      const addPart = (
-        parent: THREE.Group,
-        w: number,
-        h: number,
-        d: number,
-        faceRects: [FaceRect, FaceRect, FaceRect, FaceRect, FaceRect, FaceRect],
-        mat: THREE.Material,
-        x: number,
-        y: number,
-        z: number
-      ) => {
-        const geom = applyMinecraftUVs(new THREE.BoxGeometry(w, h, d), faceRects);
-        const mesh = new THREE.Mesh(geom, mat);
-        mesh.position.set(x, y, z);
-        mesh.castShadow = true;
-        mesh.receiveShadow = true;
-        parent.add(mesh);
-        createdMeshes.push(mesh);
-      };
-
-      const addOverlayVoxels = (
-        parent: THREE.Group,
-        texX: number,
-        texY: number,
-        texW: number,
-        texH: number,
-        texD: number,
-        w: number,
-        h: number,
-        d: number,
-        thickness: number,
-        x: number,
-        y: number,
-        z: number
-      ) => {
-        const geom = createOverlayVoxelGeometry(
-          skinImgData,
-          texX,
-          texY,
-          texW,
-          texH,
-          texD,
-          w,
-          h,
-          d,
-          thickness
-        );
-        if (!geom) return;
-        const mesh = new THREE.Mesh(geom, overlayMat);
-        mesh.position.set(x, y, z);
-        mesh.castShadow = true;
-        mesh.receiveShadow = true;
-        parent.add(mesh);
-        createdMeshes.push(mesh);
-      };
-
-      // Chibi Mojavatar Proportions: large expressive head + compact torso & short limbs
-      // 1. Head + Hat Voxel Overlay (centered around y = +0.50)
-      const headPivot = new THREE.Group();
-      headPivot.position.set(0, 0.02, 0);
-      addPart(headPivot, 1.0, 1.0, 1.0, getBoxFaceRects(0, 0, 8, 8, 8), baseMat, 0, 0.5, 0);
-      addOverlayVoxels(headPivot, 32, 0, 8, 8, 8, 1.0, 1.0, 1.0, 0.055, 0, 0.5, 0);
-      rigGroup.add(headPivot);
-
-      // 2. Chibi Torso (y: -0.60 .. +0.02)
-      const torsoGroup = new THREE.Group();
-      addPart(torsoGroup, 0.66, 0.62, 0.36, getBoxFaceRects(16, 16, 8, 12, 4), baseMat, 0, -0.29, 0);
-      if (hasSecondLayer) {
-        addOverlayVoxels(torsoGroup, 16, 32, 8, 12, 4, 0.66, 0.62, 0.36, 0.032, 0, -0.29, 0);
-      }
-      rigGroup.add(torsoGroup);
-
-      // 3. Chibi Arms (supports both 3px slim Alex and 4px classic Steve)
-      const armTexW = isSlim ? 3 : 4;
-      const armW = isSlim ? 0.21 : 0.26;
-      const armH = 0.56;
-      const armD = 0.29;
-      const armOffsetX = 0.33 + armW / 2;
-
-      const rightArmPivot = new THREE.Group();
-      rightArmPivot.position.set(-armOffsetX, -0.02, 0);
-      addPart(
-        rightArmPivot,
-        armW,
-        armH,
-        armD,
-        getBoxFaceRects(40, 16, armTexW, 12, 4),
-        baseMat,
-        0,
-        -armH / 2 + 0.04,
-        0
-      );
-      if (hasSecondLayer) {
-        addOverlayVoxels(
-          rightArmPivot,
-          40,
-          32,
-          armTexW,
-          12,
-          4,
-          armW,
-          armH,
-          armD,
-          0.03,
-          0,
-          -armH / 2 + 0.04,
-          0
-        );
-      }
-      rigGroup.add(rightArmPivot);
-
-      const leftArmPivot = new THREE.Group();
-      leftArmPivot.position.set(armOffsetX, -0.02, 0);
-      addPart(
-        leftArmPivot,
-        armW,
-        armH,
-        armD,
-        getBoxFaceRects(32, 48, armTexW, 12, 4),
-        baseMat,
-        0,
-        -armH / 2 + 0.04,
-        0
-      );
-      if (hasSecondLayer) {
-        addOverlayVoxels(
-          leftArmPivot,
-          48,
-          48,
-          armTexW,
-          12,
-          4,
-          armW,
-          armH,
-          armD,
-          0.03,
-          0,
-          -armH / 2 + 0.04,
-          0
-        );
-      }
-      rigGroup.add(leftArmPivot);
-
-      // 4. Short Chibi Legs
-      const legW = 0.31;
-      const legH = 0.44;
-      const legD = 0.34;
-
-      const rightLegPivot = new THREE.Group();
-      rightLegPivot.position.set(-0.165, -0.59, 0);
-      rightLegPivot.rotation.x = 0;
-      addPart(
-        rightLegPivot,
-        legW,
-        legH,
-        legD,
-        getBoxFaceRects(0, 16, 4, 12, 4),
-        baseMat,
-        0,
-        -legH / 2,
-        0
-      );
-      if (hasSecondLayer) {
-        addOverlayVoxels(
-          rightLegPivot,
-          0,
-          32,
-          4,
-          12,
-          4,
-          legW,
-          legH,
-          legD,
-          0.03,
-          0,
-          -legH / 2,
-          0
-        );
-      }
-      rigGroup.add(rightLegPivot);
-
-      const leftLegPivot = new THREE.Group();
-      leftLegPivot.position.set(0.165, -0.59, 0);
-      leftLegPivot.rotation.x = 0;
-      addPart(
-        leftLegPivot,
-        legW,
-        legH,
-        legD,
-        getBoxFaceRects(16, 48, 4, 12, 4),
-        baseMat,
-        0,
-        -legH / 2,
-        0
-      );
-      if (hasSecondLayer) {
-        addOverlayVoxels(
-          leftLegPivot,
-          0,
-          48,
-          4,
-          12,
-          4,
-          legW,
-          legH,
-          legD,
-          0.03,
-          0,
-          -legH / 2,
-          0
-        );
-      }
-      rigGroup.add(leftLegPivot);
-
-      sceneRefs.current.headPivot = headPivot;
-      sceneRefs.current.leftArmPivot = leftArmPivot;
-      sceneRefs.current.rightArmPivot = rightArmPivot;
-      sceneRefs.current.leftLegPivot = leftLegPivot;
-      sceneRefs.current.rightLegPivot = rightLegPivot;
-      sceneRefs.current.texture = texture;
-      sceneRefs.current.baseMat = baseMat;
-      sceneRefs.current.overlayMat = overlayMat;
-      sceneRefs.current.characterMeshes = createdMeshes;
-      sceneRefs.current.popTime = 0;
-      sceneRefs.current.activeEmote = null;
-      sceneRefs.current.emoteTime = 0;
-    };
 
     return () => {
       cancelled = true;
     };
   }, [skinUrl, webglFailed]);
+
+  // Background staggered preload of all member skins & 3D voxel rigs during idle time
+  useEffect(() => {
+    const refs = sceneRefs.current;
+    if (!preloadSkinUrls?.length || !refs.rigGroup || webglFailed) return;
+
+    let cancelled = false;
+    const timers: number[] = [];
+    const queue = preloadSkinUrls.filter(
+      (url) => url !== skinUrl && !refs.rigCache.has(url) && !refs.buildingUrls.has(url)
+    );
+
+    queue.forEach((url, idx) => {
+      const timerId = window.setTimeout(() => {
+        if (cancelled || !refs.rigGroup || refs.rigCache.has(url) || refs.buildingUrls.has(url)) {
+          return;
+        }
+        refs.buildingUrls.add(url);
+        loadNormalizedSkin(url)
+          .then((skin) => {
+            refs.buildingUrls.delete(url);
+            if (cancelled || !refs.rigGroup || refs.rigCache.has(url)) return;
+            const rig = buildCharacterRig(skin);
+            rig.group.visible = false;
+            refs.rigGroup.add(rig.group);
+            refs.rigCache.set(url, rig);
+            if (refs.desiredSkinUrl === url) {
+              activateRig(url, rig);
+            }
+          })
+          .catch(() => {
+            refs.buildingUrls.delete(url);
+          });
+      }, 180 + idx * 90);
+      timers.push(timerId);
+    });
+
+    return () => {
+      cancelled = true;
+      timers.forEach((id) => window.clearTimeout(id));
+    };
+  }, [preloadSkinUrls, webglFailed]);
 
   if (webglFailed) {
     return (
