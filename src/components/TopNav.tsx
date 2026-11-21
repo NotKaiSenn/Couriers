@@ -5,7 +5,6 @@ export type NavTab = 'home' | 'portfolio' | 'members' | 'join';
 
 interface TopNavProps {
   activeTab: NavTab;
-  isProjectPage?: boolean;
   onSelectTab: (tab: NavTab) => void;
 }
 
@@ -27,7 +26,7 @@ export const TopNav: React.FC<TopNavProps> = ({
         <button
           type="button"
           onClick={() => onSelectTab('home')}
-          className="flex shrink-0 items-center transition-opacity hover:opacity-80 focus:outline-none"
+          className="flex min-h-11 min-w-11 shrink-0 items-center transition-opacity hover:opacity-80 focus-visible:outline-2 focus-visible:outline-[#69699F]"
           aria-label="寄语 Couriers 首页"
         >
           <img
@@ -43,7 +42,7 @@ export const TopNav: React.FC<TopNavProps> = ({
         </button>
 
         {/* Right Navigation Links */}
-        <div className="flex items-center gap-5 sm:gap-10">
+        <div className="flex items-center gap-2 sm:gap-10">
           {NAV_ITEMS.map((item) => {
             const active = activeTab === item.id;
             return (
@@ -51,7 +50,7 @@ export const TopNav: React.FC<TopNavProps> = ({
                 key={item.id}
                 type="button"
                 onClick={() => onSelectTab(item.id)}
-                className={`group relative inline-flex shrink-0 items-center gap-0.5 py-1.5 text-sm font-semibold tracking-wider transition-colors sm:text-base ${
+                className={`group relative inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center gap-0.5 py-1.5 text-sm font-semibold tracking-wider transition-colors sm:min-w-0 sm:text-base ${
                   active
                     ? 'text-[#69699F]'
                     : 'text-[#333144]/65 hover:text-[#333144]'
@@ -77,31 +76,33 @@ export const TopNav: React.FC<TopNavProps> = ({
       </div>
 
       {/* Stepped pixel-block bottom edge */}
-      <svg
-        aria-hidden="true"
-        viewBox="0 0 1440 16"
-        preserveAspectRatio="none"
-        shapeRendering="crispEdges"
-        className="pointer-events-none absolute inset-x-0 top-full h-2.5 w-full fill-[#F5F6FB]"
-      >
-        <rect x="0" y="0" width="1440" height="4" />
-        <rect x="48" y="4" width="72" height="4" />
-        <rect x="192" y="4" width="48" height="4" />
-        <rect x="312" y="4" width="96" height="4" />
-        <rect x="480" y="4" width="48" height="4" />
-        <rect x="600" y="4" width="72" height="4" />
-        <rect x="744" y="4" width="48" height="4" />
-        <rect x="864" y="4" width="96" height="4" />
-        <rect x="1032" y="4" width="48" height="4" />
-        <rect x="1152" y="4" width="72" height="4" />
-        <rect x="1296" y="4" width="96" height="4" />
-        <rect x="72" y="8" width="24" height="4" />
-        <rect x="336" y="8" width="24" height="4" />
-        <rect x="624" y="8" width="24" height="4" />
-        <rect x="888" y="8" width="24" height="4" />
-        <rect x="1176" y="8" width="24" height="4" />
-        <rect x="1344" y="8" width="24" height="4" />
-      </svg>
+      <div className="pointer-events-none absolute inset-x-0 top-full flex h-2 justify-center overflow-hidden sm:h-2.5">
+        <svg
+          aria-hidden="true"
+          viewBox="0 0 1440 16"
+          preserveAspectRatio="none"
+          shapeRendering="crispEdges"
+          className="block h-full w-[720px] max-w-none shrink-0 fill-[#F5F6FB] sm:w-full"
+        >
+          <rect x="0" y="0" width="1440" height="4" />
+          <rect x="48" y="4" width="72" height="4" />
+          <rect x="192" y="4" width="48" height="4" />
+          <rect x="312" y="4" width="96" height="4" />
+          <rect x="480" y="4" width="48" height="4" />
+          <rect x="600" y="4" width="72" height="4" />
+          <rect x="744" y="4" width="48" height="4" />
+          <rect x="864" y="4" width="96" height="4" />
+          <rect x="1032" y="4" width="48" height="4" />
+          <rect x="1152" y="4" width="72" height="4" />
+          <rect x="1296" y="4" width="96" height="4" />
+          <rect x="72" y="8" width="24" height="4" />
+          <rect x="336" y="8" width="24" height="4" />
+          <rect x="624" y="8" width="24" height="4" />
+          <rect x="888" y="8" width="24" height="4" />
+          <rect x="1176" y="8" width="24" height="4" />
+          <rect x="1344" y="8" width="24" height="4" />
+        </svg>
+      </div>
     </nav>
   );
 };

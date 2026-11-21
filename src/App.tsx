@@ -9,7 +9,7 @@ import { ProjectDetailPage } from './components/ProjectDetailPage';
 import { Footer } from './components/Footer';
 import { PageTransition, TransitionPhase } from './components/PageTransition';
 
-export function App() {
+export default function App() {
   const [activeTab, setActiveTab] = useState<NavTab>('home');
   const [activeProject, setActiveProject] = useState<BuildProject | null>(null);
   const [returnTab, setReturnTab] = useState<NavTab>('portfolio');
@@ -28,7 +28,7 @@ export function App() {
     if (pendingScrollYRef.current === null) return;
     const y = pendingScrollYRef.current;
     pendingScrollYRef.current = null;
-    window.scrollTo({ top: y, behavior: 'instant' as ScrollBehavior });
+    window.scrollTo({ top: y, behavior: 'instant' });
   }, [activeTab, activeProject]);
 
   const runPageTransition = (applyChange: () => void, targetScrollY = 0) => {
@@ -89,7 +89,6 @@ export function App() {
     <div className="flex min-h-screen flex-col">
       <TopNav
         activeTab={activeProject ? 'portfolio' : activeTab}
-        isProjectPage={!!activeProject}
         onSelectTab={handleSelectTab}
       />
 
@@ -125,5 +124,3 @@ export function App() {
     </div>
   );
 }
-
-export default App;

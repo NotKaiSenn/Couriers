@@ -1,4 +1,48 @@
+html.postal-parade-playing { overflow: hidden; }
+html.postal-parade-playing body { overflow-x: clip; }
 .postal-home { --ink: #2c273d; }
+
+.works-panel {
+  --step: clamp(3px, .55vw, 8px);
+  position: relative;
+  isolation: isolate;
+  padding-inline: calc(4 * var(--step));
+  background: #f5f6fb;
+}
+.works-panel::before {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  inset: 0 max(var(--step), calc((100% - 1440px) / 2));
+  background: linear-gradient(#191825, #0d0c14);
+  --s: var(--step);
+  --two: calc(2 * var(--s));
+  --three: calc(3 * var(--s));
+  --four: calc(4 * var(--s));
+  --r1: calc(100% - var(--s));
+  --r2: calc(100% - var(--two));
+  --r3: calc(100% - var(--three));
+  --r4: calc(100% - var(--four));
+  clip-path: polygon(
+    var(--three) var(--two), 12% var(--two), 12% var(--three), 17% var(--three),
+    17% var(--s), 21% var(--s), 21% 0, 30% 0, 30% var(--two),
+    33% var(--two), 33% var(--four), 41% var(--four), 41% var(--s),
+    44% var(--s), 44% 0, 53% 0, 53% var(--two), 59% var(--two),
+    59% var(--three), 64% var(--three), 64% var(--s), 69% var(--s),
+    69% 0, 78% 0, 78% var(--three), 81% var(--three), 81% var(--four),
+    85% var(--four), 85% var(--two), var(--r3) var(--two),
+    var(--r3) 24%, 100% 24%, 100% 43%, var(--r2) 43%, var(--r2) 55%,
+    var(--r1) 55%, var(--r1) 76%, var(--r3) 76%, var(--r3) var(--r2),
+    86% var(--r2), 86% var(--r1), 78% var(--r1), 78% 100%, 68% 100%,
+    68% var(--r2), 59% var(--r2), 59% var(--r3), 54% var(--r3),
+    54% 100%, 46% 100%, 46% var(--r1), 42% var(--r1), 42% var(--r3),
+    36% var(--r3), 36% var(--r1), 26% var(--r1), 26% var(--r4),
+    19% var(--r4), 19% var(--r3), 16% var(--r3), 16% var(--r1),
+    var(--three) var(--r1), var(--three) 69%, 0 69%, 0 48%, var(--two) 48%,
+    var(--two) 40%, var(--s) 40%, var(--s) 28%, var(--four) 28%,
+    var(--four) 22%, var(--three) 22%
+  );
+}
 
 .postal-tv { max-width: 1026px; }
 
@@ -14,18 +58,33 @@
   --nav: 4rem;
   --frame: calc(100vh - var(--nav));
   --frame: calc(100svh - var(--nav));
-  --paper: #cfcfe5;
+  --paper: #F5F6FB;
   --poster-opacity: 1;
   --intro-opacity: 0;
   position: relative;
   isolation: isolate;
   margin-top: var(--nav);
+  scroll-margin-top: calc(var(--nav) - 2 * var(--frame));
   background: var(--ink);
 }
 
-.postal-stage {
+.postal-intro-track {
+  margin-bottom: clamp(8px, 1vw, 16px);
+  overflow: clip;
+}
+.postal-intro-track::after {
+  content: '';
+  display: block;
+  /* Two viewports for the reveal and one to hold the completed parade. */
+  height: calc(3 * var(--frame));
+}
+.postal-pin {
   position: sticky;
   top: var(--nav);
+}
+.postal-stage {
+  position: absolute;
+  inset: 0 0 auto;
   height: var(--frame);
   overflow: hidden;
   background: var(--ink);
@@ -86,23 +145,16 @@
 .postal-caption p { letter-spacing: .065em; }
 .postal-hero[data-hide-caption] .postal-caption { visibility: hidden; }
 
-.postal-hero #about {
+.postal-intro {
   position: relative;
-  scroll-margin-top: calc(var(--nav) - var(--frame));
   color: #f5f6fb;
-}
-.postal-hero #about::after {
-  content: '';
-  display: block;
-  /* Keep the completed parade in view for one more viewport of scrolling. */
-  height: calc(var(--frame) + var(--frame));
+  display: grid;
+  align-items: center;
+  min-height: var(--frame);
+  padding-block: 1.5rem;
 }
 .postal-story {
-  position: sticky;
-  top: var(--nav);
   align-content: center;
-  min-height: var(--frame);
-  padding-block: 3rem;
   opacity: var(--intro-opacity);
 }
 .postal-hero:not([data-show-intro]) .postal-story { visibility: hidden; }
@@ -117,11 +169,39 @@
 @media (max-width: 640px) {
   .postal-caption { display: none; }
 }
-@media (prefers-reduced-motion: reduce), (max-height: 32rem) {
-  .postal-stage { position: relative; top: 0; }
-  .postal-hero #about { scroll-margin-top: var(--nav); }
-  .postal-hero #about::after { display: none; }
-  .postal-hero .postal-story { position: relative; top: auto; visibility: visible; opacity: 1; }
+@media (max-width: 639px) and (orientation: portrait) {
+  .postal-fallback {
+    --unit: min(calc(100vw / 320), calc(var(--frame) / 465));
+    background-size: calc(284 * var(--unit)) auto;
+    background-position: center calc(50% + 40.4 * var(--unit));
+  }
+  .postal-fallback img {
+    width: calc(240.64 * var(--unit));
+    top: calc(50% - 215 * var(--unit));
+  }
+}
+@media (prefers-reduced-motion: reduce), (max-height: 32rem) and (pointer: fine) {
+  .postal-pin { position: relative; top: auto; }
+  .postal-stage { position: relative; }
+  .postal-hero { scroll-margin-top: calc(var(--nav) - var(--frame)); }
+  .postal-intro { padding-block: 3rem 1.5rem; }
+  .postal-intro-track::after { display: none; }
+  .postal-hero .postal-story { visibility: visible; opacity: 1; }
+}
+@media (max-width: 640px), (pointer: coarse) and (max-height: 32rem) {
+  .postal-stage::before { content: none; }
+  .postal-intro {
+    padding-block: 1rem;
+  }
+  .postal-story { row-gap: clamp(1rem, 4svh, 2.5rem); }
+  .postal-story p { margin-top: clamp(1rem, 3.5svh, 2rem); }
+}
+@media (pointer: coarse) and (max-height: 32rem) and (orientation: landscape) {
+  .postal-intro { padding-block: .75rem; }
+  .postal-story { grid-template-columns: 3fr 2fr; column-gap: 1.25rem; }
+  .postal-story h2 { font-size: 1.75rem; }
+  .postal-story h2 span + span { margin-top: .125em; padding-left: 2em; }
+  .postal-story p { margin-top: .75rem; padding-left: 0; font-size: 1rem; line-height: 1.5; }
 }
 @media (prefers-reduced-motion: reduce) {
   html:has(.postal-hero) { scroll-behavior: auto; }

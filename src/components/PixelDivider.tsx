@@ -3,7 +3,7 @@ import React from 'react';
 interface PixelDividerProps {
   topColor: string;
   bottomColor: string;
-  variant?: 0 | 1 | 2 | 3 | 4;
+  variant?: 0 | 3 | 4;
 }
 
 interface RectDef {
@@ -13,7 +13,7 @@ interface RectDef {
 }
 
 const VARIANTS: Record<
-  0 | 1 | 2 | 3 | 4,
+  0 | 3 | 4,
   { bottom: RectDef[]; topNotches: RectDef[] }
 > = {
   // 0: Balanced scattered checkerboard dither
@@ -55,69 +55,6 @@ const VARIANTS: Record<
       { x: 984, y: 32, w: 24 },
       { x: 1188, y: 32, w: 24 },
       { x: 1356, y: 32, w: 24 },
-    ],
-  },
-  // 1: Wide terraced plateaus with sparse floating pixels
-  1: {
-    bottom: [
-      { x: 120, y: 0, w: 48 },
-      { x: 420, y: 0, w: 24 },
-      { x: 588, y: 0, w: 48 },
-      { x: 888, y: 0, w: 24 },
-      { x: 1056, y: 0, w: 48 },
-      { x: 1320, y: 0, w: 24 },
-      { x: 0, y: 16, w: 72 },
-      { x: 168, y: 16, w: 96 },
-      { x: 324, y: 16, w: 48 },
-      { x: 444, y: 16, w: 72 },
-      { x: 636, y: 16, w: 96 },
-      { x: 780, y: 16, w: 48 },
-      { x: 912, y: 16, w: 72 },
-      { x: 1104, y: 16, w: 96 },
-      { x: 1248, y: 16, w: 48 },
-      { x: 1344, y: 16, w: 96 },
-    ],
-    topNotches: [
-      { x: 96, y: 32, w: 24 },
-      { x: 288, y: 32, w: 24 },
-      { x: 540, y: 32, w: 48 },
-      { x: 744, y: 32, w: 24 },
-      { x: 1008, y: 32, w: 48 },
-      { x: 1212, y: 32, w: 24 },
-    ],
-  },
-  // 2: Stepped pixel hills & clustered crests
-  2: {
-    bottom: [
-      { x: 24, y: 0, w: 24 },
-      { x: 240, y: 0, w: 48 },
-      { x: 312, y: 0, w: 24 },
-      { x: 528, y: 0, w: 24 },
-      { x: 720, y: 0, w: 48 },
-      { x: 960, y: 0, w: 24 },
-      { x: 1152, y: 0, w: 48 },
-      { x: 1224, y: 0, w: 24 },
-      { x: 1392, y: 0, w: 24 },
-      { x: 48, y: 16, w: 72 },
-      { x: 192, y: 16, w: 120 },
-      { x: 360, y: 16, w: 48 },
-      { x: 480, y: 16, w: 96 },
-      { x: 672, y: 16, w: 120 },
-      { x: 840, y: 16, w: 48 },
-      { x: 936, y: 16, w: 96 },
-      { x: 1128, y: 16, w: 120 },
-      { x: 1296, y: 16, w: 72 },
-    ],
-    topNotches: [
-      { x: 144, y: 32, w: 24 },
-      { x: 336, y: 32, w: 24 },
-      { x: 432, y: 32, w: 24 },
-      { x: 600, y: 32, w: 48 },
-      { x: 816, y: 32, w: 24 },
-      { x: 888, y: 32, w: 24 },
-      { x: 1056, y: 32, w: 48 },
-      { x: 1272, y: 32, w: 24 },
-      { x: 1392, y: 32, w: 24 },
     ],
   },
   // 3: Fine pixel-dust scatter (airier rhythm)
@@ -208,7 +145,7 @@ export const PixelDivider: React.FC<PixelDividerProps> = ({
 
   return (
     <div
-      className="w-full overflow-hidden leading-none select-none"
+      className="flex w-full justify-center overflow-hidden leading-none select-none"
       style={{ backgroundColor: topColor }}
       aria-hidden="true"
     >
@@ -216,7 +153,7 @@ export const PixelDivider: React.FC<PixelDividerProps> = ({
         viewBox="0 0 1440 48"
         preserveAspectRatio="none"
         shapeRendering="crispEdges"
-        className="block h-8 w-full sm:h-12"
+        className="block h-6 w-[720px] max-w-none shrink-0 sm:h-12 sm:w-full"
       >
         {/* Scattered & clustered bottom-color pixels rising into top band */}
         <g fill={bottomColor}>

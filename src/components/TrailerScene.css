@@ -1,0 +1,33 @@
+.trailer-static {
+  position: absolute;
+  inset: 0 auto auto 0;
+  width: 400%;
+  max-width: none;
+  height: 100%;
+  opacity: 0;
+  image-rendering: pixelated;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .postal-tv-screen[data-phase='waiting'] .trailer-picture { opacity: 0; }
+
+  .postal-tv-screen[data-phase='tuning'] {
+    --tuning-time: 360ms;
+  }
+  .postal-tv-screen[data-phase='tuning'] .trailer-static {
+    animation: tv-static var(--tuning-time) steps(4, jump-none) forwards;
+  }
+  .postal-tv-screen[data-phase='tuning'] .trailer-picture {
+    animation: tv-picture 120ms ease-out var(--tuning-time) both;
+  }
+}
+
+@keyframes tv-static {
+  from { transform: translateX(0); opacity: 1; }
+  to { transform: translateX(-75%); opacity: 1; }
+}
+
+@keyframes tv-picture {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}

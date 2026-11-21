@@ -8,10 +8,8 @@ export interface TeamMember {
   role: string;
   groups: RoleGroup[];
   bio: string;
-  featuredWork: string;
   avatarUrl: string;
   skinUrl: string;
-  avatarSeed: string;
 }
 
 export interface BuildProject {
@@ -29,45 +27,6 @@ export interface BuildProject {
   leadBuilderId: string;
 }
 
-export interface AboutStoryBlock {
-  id: string;
-  titleTop: string;
-  titleBottom: string;
-  description: string;
-  image: string;
-  align: 'image-left' | 'image-right';
-}
-
-export const ABOUT_STORY_BLOCKS: AboutStoryBlock[] = [
-  {
-    id: 'vision',
-    titleTop: '下一站...',
-    titleBottom: '寄语世界！',
-    description:
-      '欢迎来到寄语编织的方块世界！拆开这封由像素火漆封缄的信，踏上未知的旅途。在云海浮空的小镇漫步，踏入停摆在午夜的赤红剧场，拾起散落的唱片与纸条——每一张体验地图，都在等你亲自开启下一章！',
-    image: '/images/about-island.jpg',
-    align: 'image-left',
-  },
-  {
-    id: 'craft',
-    titleTop: '推开门...',
-    titleBottom: '机关在运转！',
-    description:
-      '这里的方块可不只是用来看的！拉动墙角的隐秘拉杆，校准星象仪的巨大铜齿轮，破解藏在书架背后的密室暗号！我们把策划的脑洞、建筑的风景与数据包机关揉在一起，让每一次探索都充满意想不到的惊喜！',
-    image: '/images/about-airship.jpg',
-    align: 'image-right',
-  },
-  {
-    id: 'visuals',
-    titleTop: '戴上耳机...',
-    titleBottom: '好戏开场了！',
-    description:
-      '当旧时钟敲响十二下，林间的微光与专属旋律同时亮起！从阳光海岸到雾气弥漫的古林，我们用光影与声景为你搭好一座座会呼吸的舞台。准备好了吗？属于你的冒险现在出发……',
-    image: '/images/about-sanctum.jpg',
-    align: 'image-left',
-  },
-];
-
 export const TEAM_MEMBERS: TeamMember[] = [
   {
     id: 'rainswallow',
@@ -77,10 +36,8 @@ export const TEAM_MEMBERS: TeamMember[] = [
     role: '团队发起人 / 剧本创作',
     groups: ['剧本创作'],
     bio: '寄语 Couriers 团队发起人，主理体验地图的世界观立意、核心剧情剧本与整体叙事节奏统筹。',
-    featuredWork: '沉默乐章：错位音',
     avatarUrl: '/images/avatars/RainSwallow.png',
     skinUrl: '/images/skins/RainSwallow.png',
-    avatarSeed: 'kai',
   },
   {
     id: 'yulu_flash',
@@ -89,10 +46,8 @@ export const TEAM_MEMBERS: TeamMember[] = [
     role: '剧本创作',
     groups: ['剧本创作'],
     bio: '负责团队地图的剧情文本打磨、人物对话编排与章节线索串联，让每段探索都带着鲜活的温度与余韵。',
-    featuredWork: '沉默乐章：错位音',
     avatarUrl: '/images/avatars/Yulu_Flash.png',
     skinUrl: '/images/skins/Yulu_Flash.png',
-    avatarSeed: 'iris',
   },
   {
     id: 'dawn_dust',
@@ -101,10 +56,8 @@ export const TEAM_MEMBERS: TeamMember[] = [
     role: '剧本创作 / 数据包 / 美工',
     groups: ['剧本创作', '数据包', '美工'],
     bio: '跨界负责剧本统筹、原版数据包玩法实现与地图美术视觉设计，擅长把故事氛围直接融进交互机制与画面之中。',
-    featuredWork: '沉默乐章：错位音',
     avatarUrl: '/images/avatars/Dawn_dust.png',
     skinUrl: '/images/skins/Dawn_dust.png',
-    avatarSeed: 'zeno',
   },
   {
     id: 'carbonado404',
@@ -113,10 +66,8 @@ export const TEAM_MEMBERS: TeamMember[] = [
     role: '数据包 / 建筑',
     groups: ['数据包', '建筑'],
     bio: '专注原版数据包逻辑、机关演出系统与大型空间结构建造，让精巧的场景结构与可交互玩法自然咬合。',
-    featuredWork: '时轮星阁',
     avatarUrl: '/images/avatars/Carbonado404.png',
     skinUrl: '/images/skins/Carbonado404.png',
-    avatarSeed: 'nova',
   },
   {
     id: 'not_flz',
@@ -125,10 +76,8 @@ export const TEAM_MEMBERS: TeamMember[] = [
     role: '数据包 / 美工',
     groups: ['数据包', '美工'],
     bio: '负责数据包机制开发、界面与资源包美术绘制，打磨顺滑的交互手感与富有辨识度的视觉细节。',
-    featuredWork: '天空之港',
     avatarUrl: '/images/avatars/Not_FLZ.png',
     skinUrl: '/images/skins/Not_FLZ.png',
-    avatarSeed: 'lyra',
   },
   {
     id: 'mlxl_mili',
@@ -137,10 +86,8 @@ export const TEAM_MEMBERS: TeamMember[] = [
     role: '建筑',
     groups: ['建筑'],
     bio: '主理箱庭建筑群落、立体动线与场景氛围搭建，用丰富的结构层次和光影关系塑造极具故事感的探索舞台。',
-    featuredWork: '翠影圣域',
     avatarUrl: '/images/avatars/MLXL_mili.png',
     skinUrl: '/images/skins/MLXL_mili.png',
-    avatarSeed: 'sora',
   },
   {
     id: 'zhi_san520',
@@ -149,10 +96,8 @@ export const TEAM_MEMBERS: TeamMember[] = [
     role: '建筑',
     groups: ['建筑'],
     bio: '擅长细节内饰布置、地形衔接与环境造景，用书架、灯影与街头角落悄悄讲完故事之外的日常片段。',
-    featuredWork: '灯影崖城',
     avatarUrl: '/images/avatars/Zhi_san520.png',
     skinUrl: '/images/skins/Zhi_san520.png',
-    avatarSeed: 'ren',
   },
 ];
 

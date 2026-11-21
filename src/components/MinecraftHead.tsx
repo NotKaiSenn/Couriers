@@ -1,22 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { TeamMember } from '../data/mockData';
 
 interface MinecraftHeadProps {
-  seed?: TeamMember['avatarSeed'] | string;
-  avatarUrl?: string;
+  seed: string;
+  avatarUrl: string;
   size?: number;
   className?: string;
 }
-
-const LOCAL_AVATARS: Record<string, string> = {
-  rainswallow: '/images/avatars/RainSwallow.png',
-  yulu_flash: '/images/avatars/Yulu_Flash.png',
-  dawn_dust: '/images/avatars/Dawn_dust.png',
-  carbonado404: '/images/avatars/Carbonado404.png',
-  not_flz: '/images/avatars/Not_FLZ.png',
-  mlxl_mili: '/images/avatars/MLXL_mili.png',
-  zhi_san520: '/images/avatars/Zhi_san520.png',
-};
 
 interface SkinPalette {
   skin: string;
@@ -114,27 +103,25 @@ function getPalette(seed: string): SkinPalette {
 }
 
 export const MinecraftHead: React.FC<MinecraftHeadProps> = ({
-  seed = 'kai',
+  seed,
   avatarUrl,
   size = 36,
   className = '',
 }) => {
-  const normalizedSeed = seed.trim().toLowerCase();
-  const resolvedSrc = avatarUrl ?? LOCAL_AVATARS[normalizedSeed];
   const [imgFailed, setImgFailed] = useState(false);
 
   useEffect(() => {
     setImgFailed(false);
-  }, [resolvedSrc]);
+  }, [avatarUrl]);
 
-  if (resolvedSrc && !imgFailed) {
+  if (avatarUrl && !imgFailed) {
     return (
       <div
         className={`relative inline-flex shrink-0 select-none ${className}`}
         style={{ width: size, height: size }}
       >
         <img
-          src={resolvedSrc}
+          src={avatarUrl}
           alt={seed}
           width={size}
           height={size}

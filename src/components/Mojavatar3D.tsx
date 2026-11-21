@@ -5,7 +5,7 @@ import { MinecraftHead } from './MinecraftHead';
 interface Mojavatar3DProps {
   mcId: string;
   skinUrl: string;
-  avatarUrl?: string;
+  avatarUrl: string;
   preloadSkinUrls?: string[];
 }
 
