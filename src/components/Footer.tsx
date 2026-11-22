@@ -3,7 +3,7 @@ import React from 'react';
 export const Footer: React.FC = () => {
   return (
     <footer className="bg-[#0d0c14] py-12 text-[#CFCFE5]/70">
-      <div className="mx-auto flex max-w-6xl flex-col justify-between gap-6 px-6 sm:flex-row sm:items-end">
+      <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-6 text-center sm:flex-row sm:items-end sm:gap-6 sm:text-left">
         <div>
           <img
             src="/images/couriers-bilingual-horizontal-light.svg"

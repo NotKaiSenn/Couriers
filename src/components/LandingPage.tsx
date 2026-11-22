@@ -380,7 +380,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
       <section className="bg-[#333144] py-20 text-white sm:py-24">
         <div
           ref={joinReveal.ref}
-          className={`reveal mx-auto grid max-w-5xl items-center justify-items-center gap-8 px-6 text-center lg:grid-cols-[minmax(0,32rem)_minmax(0,22.5rem)] lg:justify-center lg:gap-16 lg:text-left ${
+          className={`reveal mx-auto grid max-w-5xl items-center justify-items-center gap-8 px-6 text-center lg:grid-cols-[minmax(0,32rem)_minmax(0,22.5rem)] lg:justify-center lg:gap-16 lg:pl-10 lg:text-left ${
             joinReveal.visible ? 'is-visible' : ''
           }`}
         >

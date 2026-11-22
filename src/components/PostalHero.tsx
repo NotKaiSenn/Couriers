@@ -55,7 +55,7 @@ export function PostalHero({
             </div>
           </section>
           <div className="postal-intro">
-            <div className="postal-story mx-auto grid w-full max-w-6xl grid-cols-1 items-center gap-10 px-6 lg:grid-cols-2">
+            <div className="postal-story mx-auto grid w-full max-w-6xl grid-cols-1 items-center gap-10 px-6 lg:relative lg:left-2 lg:grid-cols-2">
               <div>
                 <h2 id="postal-next-stop" className="text-4xl font-black leading-tight tracking-wider sm:text-6xl">
                   <span className="block">下一站...</span>
