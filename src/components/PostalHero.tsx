@@ -13,7 +13,15 @@ const paradeParts = [
   'M425 0H490V195H425Z',
 ];
 
-export function PostalHero() {
+interface PostalHeroProps {
+  onOpenTrailerProject?: () => void;
+  onPrefetchProjectDetail?: () => void;
+}
+
+export function PostalHero({
+  onOpenTrailerProject,
+  onPrefetchProjectDetail,
+}: PostalHeroProps) {
   const sheetId = useId();
   const trackRef = useRef<HTMLElement>(null);
   const stageRef = useRef<HTMLElement>(null);
@@ -75,7 +83,10 @@ export function PostalHero() {
         </div>
       </div>
       <PixelDivider topColor="var(--ink)" bottomColor="#F5F6FB" />
-      <TrailerScene />
+      <TrailerScene
+        onOpenProject={onOpenTrailerProject}
+        onPrefetchProjectDetail={onPrefetchProjectDetail}
+      />
     </section>
   );
 }

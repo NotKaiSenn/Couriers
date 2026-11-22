@@ -134,7 +134,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({
 
   return (
     <div className="postal-home w-full">
-      <PostalHero />
+      <PostalHero
+        onOpenTrailerProject={() => onOpenProject(PORTFOLIO_PROJECTS[0])}
+        onPrefetchProjectDetail={onPrefetchProjectDetail}
+      />
 
       <section className="works-panel py-16 text-white sm:py-24">
         <div

@@ -42,14 +42,18 @@
   );
 }
 
-.postal-tv { max-width: 1026px; }
+.postal-tv {
+  width: 100%;
+  max-width: 680px;
+}
 
-/* The 342 × 224 frame overlaps the 256 × 144 screen by one sprite pixel. */
+/* The 288 × 224 frame overlaps the 202 × 144 screen by one sprite pixel. */
 .postal-tv-screen {
   position: absolute;
-  left: calc(100% * 16 / 342);
+  left: calc(100% * 16 / 288);
   top: 25%;
-  width: calc(100% * 256 / 342);
+  width: calc(100% * 202 / 288);
+  height: calc(100% * 144 / 224);
 }
 
 .postal-hero {

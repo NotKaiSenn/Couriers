@@ -1,12 +1,18 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { ArrowRight, ArrowUpRight } from 'lucide-react';
 import { OptimizedImage } from './OptimizedImage';
 import './TrailerScene.css';
 
-const SCREEN_WIDTH = 256;
+const SCREEN_WIDTH = 202;
 const SCREEN_HEIGHT = 144;
 const STATIC_FRAMES = 4;
 // Keep the tuned picture when returning from a project in the same page load.
 let tunedThisPageLoad = false;
+
+interface TrailerSceneProps {
+  onOpenProject?: () => void;
+  onPrefetchProjectDetail?: () => void;
+}
 
 function drawStatic(strip: HTMLCanvasElement) {
   const context = strip.getContext('2d');
@@ -31,11 +37,14 @@ function drawStatic(strip: HTMLCanvasElement) {
   }
 }
 
-export function TrailerScene() {
+export function TrailerScene({
+  onOpenProject,
+  onPrefetchProjectDetail,
+}: TrailerSceneProps) {
   const screenRef = useRef<HTMLAnchorElement>(null);
   const staticRef = useRef<HTMLCanvasElement>(null);
   const [phase, setPhase] = useState<'waiting' | 'tuning' | 'ready'>(
-    () => tunedThisPageLoad ? 'ready' : 'waiting',
+    () => (tunedThisPageLoad ? 'ready' : 'waiting'),
   );
   const showTrailer = useCallback(() => {
     tunedThisPageLoad = true;
@@ -52,24 +61,27 @@ export function TrailerScene() {
     }
 
     let mounted = true;
-    const observer = new IntersectionObserver(async ([entry]) => {
-      if (!entry.isIntersecting) return;
-      observer.disconnect();
-      try {
-        const img = screen.querySelector('img');
-        if (img) {
-          if (!img.complete) img.loading = 'eager';
-          await img.decode();
+    const observer = new IntersectionObserver(
+      async ([entry]) => {
+        if (!entry.isIntersecting) return;
+        observer.disconnect();
+        try {
+          const img = screen.querySelector('img');
+          if (img) {
+            if (!img.complete) img.loading = 'eager';
+            await img.decode();
+          }
+        } catch {
+          if (mounted) showTrailer();
+          return;
         }
-      } catch {
-        if (mounted) showTrailer();
-        return;
-      }
-      if (!mounted || tunedThisPageLoad) return;
-      if (staticRef.current) drawStatic(staticRef.current);
-      tunedThisPageLoad = true;
-      setPhase('tuning');
-    }, { rootMargin: '-64px 0px 0px', threshold: 0.25 });
+        if (!mounted || tunedThisPageLoad) return;
+        if (staticRef.current) drawStatic(staticRef.current);
+        tunedThisPageLoad = true;
+        setPhase('tuning');
+      },
+      { rootMargin: '-64px 0px 0px', threshold: 0.25 },
+    );
     observer.observe(screen);
 
     const onMotionChange = () => {
@@ -87,51 +99,104 @@ export function TrailerScene() {
   }, [showTrailer]);
 
   return (
-    <section className="bg-[#F5F6FB] px-4 pt-6 pb-14 sm:px-6 sm:pt-10 sm:pb-20" aria-label="《沉默乐章：错位音》预告片">
-      <div className="postal-tv relative mx-auto">
-        <a
-          ref={screenRef}
-          data-phase={phase}
-          href="https://www.bilibili.com/video/BV1M8NQ6GE8M/"
-          target="_blank"
-          rel="noopener noreferrer"
-          aria-label="在哔哩哔哩观看《沉默乐章：错位音》"
-          className="postal-tv-screen block aspect-video overflow-hidden bg-[#201e2c] focus-visible:outline-4 focus-visible:-outline-offset-4 focus-visible:outline-white"
-          onFocus={showTrailer}
-        >
-          {phase !== 'ready' && (
-            <canvas
-              ref={staticRef}
-              className="trailer-static"
-              aria-hidden="true"
-              width={SCREEN_WIDTH * STATIC_FRAMES}
-              height={SCREEN_HEIGHT}
-            />
-          )}
-          <span className="trailer-picture absolute inset-0" onAnimationEnd={showTrailer}>
-            <OptimizedImage
-              src="/images/project-silent.jpg"
+    <section
+      className="bg-[#F5F6FB] py-14 sm:py-20 lg:py-24"
+      aria-label="《沉默乐章：错位音》预告片"
+    >
+      <div className="mx-auto grid max-w-6xl grid-cols-1 items-center gap-10 px-6 lg:grid-cols-[minmax(0,1.45fr)_minmax(0,1fr)] lg:gap-14">
+        <div className="postal-tv mx-auto lg:mx-0">
+          <div className="relative">
+            <a
+              ref={screenRef}
+              data-phase={phase}
+              href="https://www.bilibili.com/video/BV1M8NQ6GE8M/"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="在哔哩哔哩观看《沉默乐章：错位音》"
+              className="postal-tv-screen block overflow-hidden bg-[#201e2c] focus-visible:outline-4 focus-visible:-outline-offset-4 focus-visible:outline-white"
+              onFocus={showTrailer}
+            >
+              {phase !== 'ready' && (
+                <canvas
+                  ref={staticRef}
+                  className="trailer-static"
+                  aria-hidden="true"
+                  width={SCREEN_WIDTH * STATIC_FRAMES}
+                  height={SCREEN_HEIGHT}
+                />
+              )}
+              <span className="trailer-picture absolute inset-0" onAnimationEnd={showTrailer}>
+                <OptimizedImage
+                  src="/images/project-silent.jpg"
+                  alt=""
+                  width={1280}
+                  height={720}
+                  loading="lazy"
+                  sizes="(min-width: 1024px) 520px, 70vw"
+                  className="h-full w-full object-cover"
+                />
+                <span className="absolute inset-0 m-auto grid size-14 place-items-center rounded-md border-2 border-white bg-black/70 text-white sm:size-20">
+                  <span
+                    aria-hidden="true"
+                    className="h-[calc(1.26rem+2px)] w-[calc(1.125rem+2px)] translate-x-px bg-current [clip-path:polygon(0_0,100%_50%,0_100%)] sm:h-[calc(1.68rem+2px)] sm:w-[calc(1.5rem+2px)]"
+                  />
+                </span>
+              </span>
+            </a>
+            <img
+              className="pointer-events-none relative block h-auto w-full select-none [image-rendering:pixelated]"
+              src="/images/post-office/television.png"
               alt=""
-              width={1280}
-              height={720}
+              width="288"
+              height="224"
               loading="lazy"
-              sizes="(min-width: 1024px) 768px, 75vw"
-              className="h-full w-full object-cover"
+              decoding="async"
             />
-            <span className="absolute inset-0 m-auto grid size-14 place-items-center rounded-md border-2 border-white bg-black/70 text-white sm:size-20">
-              <span aria-hidden="true" className="h-[calc(1.26rem+2px)] w-[calc(1.125rem+2px)] translate-x-px bg-current [clip-path:polygon(0_0,100%_50%,0_100%)] sm:h-[calc(1.68rem+2px)] sm:w-[calc(1.5rem+2px)]" />
-            </span>
-          </span>
-        </a>
-        <img
-          className="pointer-events-none relative block h-auto w-full select-none [image-rendering:pixelated]"
-          src="/images/post-office/television.png"
-          alt=""
-          width="342"
-          height="224"
-          loading="lazy"
-          decoding="async"
-        />
+          </div>
+          <div
+            aria-hidden="true"
+            className="mx-auto -mt-1.5 h-4 w-[90%] rounded-full bg-[radial-gradient(ellipse_at_center,rgba(44,39,61,0.22)_0%,rgba(44,39,61,0.08)_55%,transparent_76%)]"
+          />
+        </div>
+
+        <div className="mx-auto w-full max-w-xl text-center lg:mx-0 lg:max-w-none lg:text-left">
+          <h2 className="text-3xl font-black tracking-tight text-[#333144] sm:text-4xl">
+            沉默乐章：错位音
+          </h2>
+          <p className="mt-4 text-pretty text-sm leading-7 text-[#333144]/75 sm:text-base sm:leading-8">
+            一座停摆在午夜十二点的赤红剧场，失落乐章的碎片散落在错位的回忆与黑胶唱片之中。
+          </p>
+
+          <div className="mt-5 flex flex-wrap justify-center gap-2 text-xs font-semibold text-[#69699F] lg:justify-start">
+            <span className="rounded border border-[#CFCFE5] bg-white px-2.5 py-1">叙事解谜</span>
+            <span className="rounded border border-[#CFCFE5] bg-white px-2.5 py-1">1–2 人</span>
+            <span className="rounded border border-[#CFCFE5] bg-white px-2.5 py-1">约 90 分钟</span>
+          </div>
+
+          <div className="mt-7 flex flex-wrap justify-center gap-3 lg:justify-start">
+            <a
+              href="https://www.bilibili.com/video/BV1M8NQ6GE8M/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 rounded-md border-2 border-[#333144] bg-[#333144] px-5 py-2.5 text-sm font-bold tracking-wide text-white shadow-md shadow-[#333144]/12 transition hover:border-[#69699F] hover:bg-[#69699F]"
+            >
+              <span>观看宣传片</span>
+              <ArrowUpRight className="h-4 w-4" />
+            </a>
+            {onOpenProject && (
+              <button
+                type="button"
+                onClick={onOpenProject}
+                onMouseEnter={onPrefetchProjectDetail}
+                onFocus={onPrefetchProjectDetail}
+                className="inline-flex items-center gap-1.5 rounded-md border-2 border-[#CFCFE5] bg-white px-5 py-2.5 text-sm font-bold tracking-wide text-[#333144] transition hover:border-[#333144]"
+              >
+                <span>查看详情</span>
+                <ArrowRight className="h-4 w-4" />
+              </button>
+            )}
+          </div>
+        </div>
       </div>
     </section>
   );
