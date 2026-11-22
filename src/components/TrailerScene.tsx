@@ -167,12 +167,6 @@ export function TrailerScene({
             一座停摆在午夜十二点的赤红剧场，失落乐章的碎片散落在错位的回忆与黑胶唱片之中。
           </p>
 
-          <div className="mt-5 flex flex-wrap justify-center gap-2 text-xs font-semibold text-[#69699F] lg:justify-start">
-            <span className="rounded border border-[#CFCFE5] bg-white px-2.5 py-1">叙事解谜</span>
-            <span className="rounded border border-[#CFCFE5] bg-white px-2.5 py-1">1–2 人</span>
-            <span className="rounded border border-[#CFCFE5] bg-white px-2.5 py-1">约 90 分钟</span>
-          </div>
-
           <div className="mt-7 flex flex-wrap justify-center gap-3 lg:justify-start">
             <a
               href="https://www.bilibili.com/video/BV1M8NQ6GE8M/"

@@ -182,7 +182,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                 key={project.id}
                 onClick={() => onOpenProject(project)}
                 onMouseEnter={onPrefetchProjectDetail}
-                className="group w-[82vw] shrink-0 snap-start cursor-pointer sm:w-[calc((100%-3rem)/3)]"
+                className="group w-[min(100%,82vw)] shrink-0 snap-start cursor-pointer sm:w-[calc((100%-3rem)/3)]"
               >
                 <div className="aspect-square w-full overflow-hidden rounded-md border-2 border-[#CFCFE5]/25 bg-[#333144] transition-colors group-hover:border-[#8F99D2]">
                   <OptimizedImage
@@ -231,38 +231,57 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               成员
             </h2>
 
-            <div className="member-portrait overflow-hidden rounded-full border-2 border-[#333144] bg-[#64659B] shadow-2xl shadow-[#333144]/20">
+            <div className="member-portrait">
+              <div className="member-portrait-stage">
+                <svg
+                  aria-hidden="true"
+                  className="member-envelope-drift pointer-events-none absolute top-0 left-0"
+                >
+                  <defs>
+                    <pattern
+                      id="couriers-logo-tile"
+                      width="96"
+                      height="84"
+                      patternUnits="userSpaceOnUse"
+                    >
+                      <g
+                        id="couriers-profile-stamp"
+                        transform="translate(4 4) scale(0.76)"
+                        fill="#525386"
+                        opacity="0.72"
+                        shapeRendering="crispEdges"
+                      >
+                        <path d="M34 2h7v2H34ZM27 4h16v1H27ZM24 5h11v1H24ZM19 6h13v1H19ZM17 7h10v1H17ZM12 8h13v1H12ZM41 5h2v4H41ZM9 9h10v1H9ZM40 9h4v1H40ZM5 10h10v1H5ZM38 10h6v1H38ZM4 11h8v1H4ZM38 11h2v1H38ZM2 12h9v1H2ZM37 12h3v1H37ZM36 13h3v1H36ZM2 13h3v2H2ZM36 14h1v1H36ZM42 11h3v4H42ZM2 15h4v1H2ZM34 15h3v1H34ZM2 16h7v1H2ZM33 16h3v1H33ZM43 15h2v2H43ZM2 17h4v1H2ZM8 17h3v1H8ZM3 18h3v1H3ZM8 18h4v1H8ZM32 17h2v2H32ZM11 19h4v1H11ZM30 19h2v1H30ZM43 17h3v3H43ZM12 20h7v1H12ZM44 20h2v1H44ZM15 21h4v1H15ZM19 22h3v1H19ZM30 20h1v3H30ZM44 21h3v2H44ZM21 23h1v1H21ZM4 19h3v6H4ZM45 23h2v2H45ZM31 23h1v3H31ZM5 25h3v3H5ZM22 26h1v2H22ZM6 28h2v1H6ZM45 25h3v4H45ZM40 29h8v1H40ZM37 30h11v1H37ZM6 29h3v3H6ZM32 31h13v1H32ZM27 32h14v1H27ZM23 33h14v1H23ZM19 34h13v1H19ZM7 32h3v4H7ZM15 35h17v1H15ZM7 36h18v1H7ZM9 37h14v1H9ZM9 38h7v2H9Z" />
+                        <path d="M22 20h2v1H22ZM26 19h3v2H26ZM23 21h6v1H23ZM23 22h7v3H23ZM24 25h6v1H24ZM24 26h3v1H24ZM28 26h2v1H28ZM24 27h2v1H24Z" />
+                      </g>
+                      <use href="#couriers-profile-stamp" x="48" y="42" />
+                    </pattern>
+                  </defs>
+                  <rect
+                    width="100%"
+                    height="100%"
+                    fill="url(#couriers-logo-tile)"
+                  />
+                </svg>
+              </div>
+
               <svg
                 aria-hidden="true"
-                className="pointer-events-none absolute inset-0 h-full w-full"
+                viewBox="0 0 24 24"
+                shapeRendering="crispEdges"
+                className="pointer-events-none absolute inset-0 z-20 h-full w-full overflow-visible"
               >
-                <defs>
-                  <pattern
-                    id="couriers-logo-tile"
-                    width="96"
-                    height="84"
-                    patternUnits="userSpaceOnUse"
-                  >
-                    <g id="couriers-profile-stamp"
-                      transform="translate(4 4) scale(0.76)"
-                      fill="#525386"
-                      opacity="0.72"
-                      shapeRendering="crispEdges"
-                    >
-                      <path d="M34 2h7v2H34ZM27 4h16v1H27ZM24 5h11v1H24ZM19 6h13v1H19ZM17 7h10v1H17ZM12 8h13v1H12ZM41 5h2v4H41ZM9 9h10v1H9ZM40 9h4v1H40ZM5 10h10v1H5ZM38 10h6v1H38ZM4 11h8v1H4ZM38 11h2v1H38ZM2 12h9v1H2ZM37 12h3v1H37ZM36 13h3v1H36ZM2 13h3v2H2ZM36 14h1v1H36ZM42 11h3v4H42ZM2 15h4v1H2ZM34 15h3v1H34ZM2 16h7v1H2ZM33 16h3v1H33ZM43 15h2v2H43ZM2 17h4v1H2ZM8 17h3v1H8ZM3 18h3v1H3ZM8 18h4v1H8ZM32 17h2v2H32ZM11 19h4v1H11ZM30 19h2v1H30ZM43 17h3v3H43ZM12 20h7v1H12ZM44 20h2v1H44ZM15 21h4v1H15ZM19 22h3v1H19ZM30 20h1v3H30ZM44 21h3v2H44ZM21 23h1v1H21ZM4 19h3v6H4ZM45 23h2v2H45ZM31 23h1v3H31ZM5 25h3v3H5ZM22 26h1v2H22ZM6 28h2v1H6ZM45 25h3v4H45ZM40 29h8v1H40ZM37 30h11v1H37ZM6 29h3v3H6ZM32 31h13v1H32ZM27 32h14v1H27ZM23 33h14v1H23ZM19 34h13v1H19ZM7 32h3v4H7ZM15 35h17v1H15ZM7 36h18v1H7ZM9 37h14v1H9ZM9 38h7v2H9Z" />
-                      <path d="M22 20h2v1H22ZM26 19h3v2H26ZM23 21h6v1H23ZM23 22h7v3H23ZM24 25h6v1H24ZM24 26h3v1H24ZM28 26h2v1H28ZM24 27h2v1H24Z" />
-                    </g>
-                    <use href="#couriers-profile-stamp" x="48" y="42" />
-                  </pattern>
-                </defs>
-                <rect
-                  width="100%"
-                  height="100%"
-                  fill="url(#couriers-logo-tile)"
+                <polygon
+                  points="2,2 4,2 4,1 9,1 9,2 13,2 13,0 19,0 19,1 22,1 22,3 23,3 23,7 22,7 22,11 24,11 24,17 23,17 23,21 21,21 21,22 18,22 18,23 13,23 13,22 9,22 9,24 4,24 4,22 2,22 2,20 1,20 1,16 2,16 2,12 0,12 0,6 1,6 1,3 2,3"
+                  fill="none"
+                  stroke="#333144"
+                  strokeWidth="2.5"
+                  strokeLinejoin="miter"
+                  vectorEffect="non-scaling-stroke"
                 />
               </svg>
 
-              <div ref={portraitRef} className="relative z-10 h-full w-full">
+              <div ref={portraitRef} className="member-portrait-model absolute -inset-[35%] z-30">
                 {shouldLoad3D ? (
                   <Suspense
                     fallback={
@@ -329,7 +348,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               </button>
             </div>
 
-            <div className="relative w-full rounded-md border-2 border-[#CFCFE5] bg-[#F5F6FB] p-4 shadow-xl shadow-[#333144]/8 sm:p-6 lg:h-[176px] lg:pl-7 lg:pr-14" aria-live="polite" aria-atomic="true">
+            <div className="relative z-20 w-full rounded-md border-2 border-[#CFCFE5] bg-[#F5F6FB] p-4 shadow-xl shadow-[#333144]/8 sm:p-6 lg:h-[176px] lg:pl-7 lg:pr-14" aria-live="polite" aria-atomic="true">
               <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1">
                 <h3 className="break-all text-xl font-extrabold text-[#333144]">{activeMember.name}</h3>
                 {activeMember.isFounder && (

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useId } from 'react';
 import { ArrowUpRight } from 'lucide-react';
 
 export type NavTab = 'home' | 'portfolio' | 'members' | 'join';
@@ -16,11 +16,34 @@ const NAV_ITEMS: { id: NavTab; label: string }[] = [
   { id: 'join', label: '加入我们' },
 ];
 
+const NAV_EDGE_CELL = 16;
+const NAV_EDGE_STEP_H = 4;
+const NAV_EDGE_TILE_W = 60 * NAV_EDGE_CELL; // 960px
+const NAV_EDGE_SEAM = 1;
+const NAV_EDGE_H = NAV_EDGE_SEAM + 2 * NAV_EDGE_STEP_H; // 9px (8px visible overhang + 1px seam overlap)
+
+const NAV_EDGE_ROW1: Array<[number, number]> = [
+  [2, 3],
+  [8, 2],
+  [13, 4],
+  [20, 2],
+  [25, 3],
+  [31, 2],
+  [36, 4],
+  [43, 2],
+  [48, 3],
+  [54, 4],
+];
+
+const NAV_EDGE_ROW2: number[] = [3, 14, 26, 37, 49, 56];
+
 export const TopNav: React.FC<TopNavProps> = ({
   activeTab,
   onSelectTab,
   onPrefetchTab,
 }) => {
+  const edgePatternId = useId();
+
   return (
     <nav className="fixed inset-x-0 top-0 z-40 h-16 bg-[#F5F6FB]">
       <div className="mx-auto flex h-full max-w-6xl items-center justify-between px-4 sm:px-6">
@@ -81,32 +104,49 @@ export const TopNav: React.FC<TopNavProps> = ({
         </div>
       </div>
 
-      {/* Stepped pixel-block bottom edge */}
-      <div className="pointer-events-none absolute inset-x-0 top-full flex h-2 justify-center overflow-hidden sm:h-2.5">
+      {/* Fixed-size stepped pixel-block bottom edge */}
+      <div
+        className="pointer-events-none absolute inset-x-0 top-[calc(100%-1px)] overflow-hidden leading-none"
+        style={{ height: NAV_EDGE_H }}
+      >
         <svg
           aria-hidden="true"
-          viewBox="0 0 1440 16"
-          preserveAspectRatio="none"
+          width="100%"
+          height={NAV_EDGE_H}
           shapeRendering="crispEdges"
-          className="block h-full w-[720px] max-w-none shrink-0 fill-[#F5F6FB] sm:w-full"
+          className="block w-full"
         >
-          <rect x="0" y="0" width="1440" height="4" />
-          <rect x="48" y="4" width="72" height="4" />
-          <rect x="192" y="4" width="48" height="4" />
-          <rect x="312" y="4" width="96" height="4" />
-          <rect x="480" y="4" width="48" height="4" />
-          <rect x="600" y="4" width="72" height="4" />
-          <rect x="744" y="4" width="48" height="4" />
-          <rect x="864" y="4" width="96" height="4" />
-          <rect x="1032" y="4" width="48" height="4" />
-          <rect x="1152" y="4" width="72" height="4" />
-          <rect x="1296" y="4" width="96" height="4" />
-          <rect x="72" y="8" width="24" height="4" />
-          <rect x="336" y="8" width="24" height="4" />
-          <rect x="624" y="8" width="24" height="4" />
-          <rect x="888" y="8" width="24" height="4" />
-          <rect x="1176" y="8" width="24" height="4" />
-          <rect x="1344" y="8" width="24" height="4" />
+          <defs>
+            <pattern
+              id={edgePatternId}
+              width={NAV_EDGE_TILE_W}
+              height={NAV_EDGE_H}
+              patternUnits="userSpaceOnUse"
+            >
+              <g fill="#F5F6FB">
+                <rect x="0" y="0" width={NAV_EDGE_TILE_W} height={NAV_EDGE_SEAM} />
+                {NAV_EDGE_ROW1.map(([col, span], i) => (
+                  <rect
+                    key={i}
+                    x={col * NAV_EDGE_CELL}
+                    y={NAV_EDGE_SEAM}
+                    width={span * NAV_EDGE_CELL}
+                    height={NAV_EDGE_STEP_H}
+                  />
+                ))}
+                {NAV_EDGE_ROW2.map((col, i) => (
+                  <rect
+                    key={i}
+                    x={col * NAV_EDGE_CELL}
+                    y={NAV_EDGE_SEAM + NAV_EDGE_STEP_H}
+                    width={NAV_EDGE_CELL}
+                    height={NAV_EDGE_STEP_H}
+                  />
+                ))}
+              </g>
+            </pattern>
+          </defs>
+          <rect width="100%" height={NAV_EDGE_H} fill={`url(#${edgePatternId})`} />
         </svg>
       </div>
     </nav>

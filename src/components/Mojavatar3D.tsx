@@ -630,9 +630,10 @@ export const Mojavatar3D: React.FC<Mojavatar3DProps> = ({
     mount.appendChild(renderer.domElement);
 
     const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(32, width / height, 0.1, 50);
-    camera.position.set(0, 0.18, 5.45);
-    camera.lookAt(0, 0.0, 0);
+    // 44.0° FOV on the -inset-[35%] (1.70x) canvas keeps the exact scaled-up character size with generous jump headroom
+    const camera = new THREE.PerspectiveCamera(44.0, width / height, 0.1, 50);
+    camera.position.set(0, 0.06, 5.45);
+    camera.lookAt(0, -0.15, 0);
 
     // Balanced studio lighting for bright, vibrant chibi figurine shading + clear shadow
     const ambient = new THREE.AmbientLight(0xffffff, 1.4);
@@ -644,11 +645,11 @@ export const Mojavatar3D: React.FC<Mojavatar3DProps> = ({
     keyLight.shadow.mapSize.width = 512;
     keyLight.shadow.mapSize.height = 512;
     keyLight.shadow.camera.near = 0.5;
-    keyLight.shadow.camera.far = 14;
-    keyLight.shadow.camera.left = -2;
-    keyLight.shadow.camera.right = 2;
-    keyLight.shadow.camera.top = 2;
-    keyLight.shadow.camera.bottom = -2;
+    keyLight.shadow.camera.far = 16;
+    keyLight.shadow.camera.left = -3.0;
+    keyLight.shadow.camera.right = 3.0;
+    keyLight.shadow.camera.top = 3.0;
+    keyLight.shadow.camera.bottom = -3.0;
     keyLight.shadow.bias = -0.002;
     scene.add(keyLight);
 
@@ -666,7 +667,7 @@ export const Mojavatar3D: React.FC<Mojavatar3DProps> = ({
 
     // Real-time directional shadow receiver + soft ground contact shadow beneath chibi feet
     const shadowReceiver = new THREE.Mesh(
-      new THREE.PlaneGeometry(3.2, 3.2),
+      new THREE.PlaneGeometry(6.0, 6.0),
       new THREE.ShadowMaterial({ opacity: 0.42 })
     );
     shadowReceiver.rotation.x = -Math.PI / 2;
