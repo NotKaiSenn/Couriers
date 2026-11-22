@@ -44,7 +44,7 @@
 
 .postal-tv {
   width: 100%;
-  max-width: 680px;
+  max-width: 576px;
 }
 
 /* The 288 × 224 frame overlaps the 202 × 144 screen by one sprite pixel. */

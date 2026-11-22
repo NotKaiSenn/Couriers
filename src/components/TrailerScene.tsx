@@ -103,7 +103,7 @@ export function TrailerScene({
       className="bg-[#F5F6FB] py-14 sm:py-20 lg:py-24"
       aria-label="《沉默乐章：错位音》预告片"
     >
-      <div className="mx-auto grid max-w-6xl grid-cols-1 items-center gap-10 px-6 lg:grid-cols-[minmax(0,1.45fr)_minmax(0,1fr)] lg:gap-14">
+      <div className="mx-auto grid max-w-5xl grid-cols-1 items-center gap-10 px-6 lg:grid-cols-[minmax(0,36rem)_minmax(0,20rem)] lg:justify-center lg:gap-12 lg:pl-10">
         <div className="postal-tv mx-auto lg:mx-0">
           <div className="relative">
             <a
@@ -159,7 +159,7 @@ export function TrailerScene({
           />
         </div>
 
-        <div className="mx-auto w-full max-w-xl text-center lg:mx-0 lg:max-w-none lg:text-left">
+        <div className="mx-auto w-full max-w-xl text-center lg:mx-0 lg:max-w-none lg:pt-8 lg:text-left">
           <h2 className="text-3xl font-black tracking-tight text-[#333144] sm:text-4xl">
             沉默乐章：错位音
           </h2>
