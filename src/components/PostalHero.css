@@ -94,7 +94,7 @@
   position: absolute;
   inset: 0 0 0 auto;
   width: min(80vw, 900px);
-  background: url('/images/post-office/steam.png') bottom right / contain no-repeat;
+  background: url('/images/post-office/steam.webp') bottom right / contain no-repeat;
   image-rendering: pixelated;
   opacity: .34;
 }
@@ -117,7 +117,7 @@
 }
 
 .postal-fallback {
-  background: url('/images/post-office/district.png') center top 36svh / min(80vw, 76svh) auto no-repeat;
+  background: url('/images/post-office/district.webp') center top 36svh / min(80vw, 76svh) auto no-repeat;
 }
 .postal-fallback img {
   position: absolute;

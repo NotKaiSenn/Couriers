@@ -3,10 +3,10 @@ export const paradeImage = '/images/post-office/mail-outlined.png';
 const artFiles = {
   letterBalloons: '/images/post-office/letter-balloons.png',
   sageBalloon: '/images/post-office/sage-balloon.png',
-  sky: '/images/post-office/sky.png',
-  cloud: '/images/post-office/cloud.png',
-  district: '/images/post-office/district.png',
-  steam: '/images/post-office/steam.png',
+  sky: '/images/post-office/sky.webp',
+  cloud: '/images/post-office/cloud.webp',
+  district: '/images/post-office/district.webp',
+  steam: '/images/post-office/steam.webp',
   title: '/images/post-office/masthead-outlined.svg',
 } as const;
 
