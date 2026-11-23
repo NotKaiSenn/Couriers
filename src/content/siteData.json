@@ -6,6 +6,7 @@
     "trailerCustomTitle": "",
     "trailerCustomSummary": "",
     "featuredProjectIds": [
+      "project-0849",
       "silent-movement"
     ]
   },
@@ -107,6 +108,37 @@
     }
   ],
   "projects": [
+    {
+      "id": "project-0849",
+      "title": "未命名作品",
+      "category": "",
+      "date": "2026-11",
+      "playTime": "约 60 分钟",
+      "players": "1–2 人",
+      "version": "Java 1.21.4",
+      "buildersCount": 1,
+      "image": "/images/projects/project-0849.png",
+      "imageFit": "cover",
+      "downloadUrl": "hh",
+      "downloadLabel": "下载地图",
+      "videoUrl": "",
+      "pageMode": "standard",
+      "customPageUrl": "",
+      "summary": "",
+      "story": [
+        "测试测试"
+      ],
+      "leadBuilderId": "dawn_dust",
+      "imageMeta": {
+        "jpg": "/images/projects/project-0849.png",
+        "width": 2156,
+        "height": 1076,
+        "webp": "/images/projects/project-0849.webp",
+        "smWidth": 736,
+        "jpgSm": "/images/projects/project-0849-sm.jpg",
+        "webpSm": "/images/projects/project-0849-sm.webp"
+      }
+    },
     {
       "id": "silent-movement",
       "title": "沉默乐章：错位音",
