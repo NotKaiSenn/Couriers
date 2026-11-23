@@ -16,7 +16,9 @@
       "mcId": "RainSwallow",
       "isFounder": true,
       "role": "团队发起人 / 剧本创作",
-      "groups": ["剧本创作"],
+      "groups": [
+        "剧本创作"
+      ],
       "bio": "寄语 Couriers 团队发起人，主理体验地图的世界观立意、核心剧情剧本与整体叙事节奏统筹。",
       "avatarUrl": "/images/avatars/RainSwallow.png",
       "skinUrl": "/images/skins/RainSwallow.png"
@@ -27,7 +29,9 @@
       "mcId": "Yulu_Flash",
       "isFounder": false,
       "role": "剧本创作",
-      "groups": ["剧本创作"],
+      "groups": [
+        "剧本创作"
+      ],
       "bio": "负责团队地图的剧情文本打磨、人物对话编排与章节线索串联，让每段探索都带着鲜活的温度与余韵。",
       "avatarUrl": "/images/avatars/Yulu_Flash.png",
       "skinUrl": "/images/skins/Yulu_Flash.png"
@@ -38,7 +42,11 @@
       "mcId": "Dawn_dust",
       "isFounder": false,
       "role": "剧本创作 / 数据包 / 美工",
-      "groups": ["剧本创作", "数据包", "美工"],
+      "groups": [
+        "剧本创作",
+        "数据包",
+        "美工"
+      ],
       "bio": "跨界负责剧本统筹、原版数据包玩法实现与地图美术视觉设计，擅长把故事氛围直接融进交互机制与画面之中。",
       "avatarUrl": "/images/avatars/Dawn_dust.png",
       "skinUrl": "/images/skins/Dawn_dust.png"
@@ -49,7 +57,10 @@
       "mcId": "Carbonado404",
       "isFounder": false,
       "role": "数据包 / 建筑",
-      "groups": ["数据包", "建筑"],
+      "groups": [
+        "数据包",
+        "建筑"
+      ],
       "bio": "专注原版数据包逻辑、机关演出系统与大型空间结构建造，让精巧的场景结构与可交互玩法自然咬合。",
       "avatarUrl": "/images/avatars/Carbonado404.png",
       "skinUrl": "/images/skins/Carbonado404.png"
@@ -60,7 +71,10 @@
       "mcId": "Not_FLZ",
       "isFounder": false,
       "role": "数据包 / 美工",
-      "groups": ["数据包", "美工"],
+      "groups": [
+        "数据包",
+        "美工"
+      ],
       "bio": "负责数据包机制开发、界面与资源包美术绘制，打磨顺滑的交互手感与富有辨识度的视觉细节。",
       "avatarUrl": "/images/avatars/Not_FLZ.png",
       "skinUrl": "/images/skins/Not_FLZ.png"
@@ -71,7 +85,9 @@
       "mcId": "MLXL_mili",
       "isFounder": false,
       "role": "建筑",
-      "groups": ["建筑"],
+      "groups": [
+        "建筑"
+      ],
       "bio": "主理箱庭建筑群落、立体动线与场景氛围搭建，用丰富的结构层次和光影关系塑造极具故事感的探索舞台。",
       "avatarUrl": "/images/avatars/MLXL_mili.png",
       "skinUrl": "/images/skins/MLXL_mili.png"
@@ -82,7 +98,9 @@
       "mcId": "Zhi_san520",
       "isFounder": false,
       "role": "建筑",
-      "groups": ["建筑"],
+      "groups": [
+        "建筑"
+      ],
       "bio": "擅长细节内饰布置、地形衔接与环境造景，用书架、灯影与街头角落悄悄讲完故事之外的日常片段。",
       "avatarUrl": "/images/avatars/Zhi_san520.png",
       "skinUrl": "/images/skins/Zhi_san520.png"
