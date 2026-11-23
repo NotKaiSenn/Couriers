@@ -193,15 +193,7 @@ export default function App() {
         </Suspense>
       </main>
 
-      {!isAdminMode && (
-        <Footer
-          onOpenAdmin={() => {
-            window.location.hash = 'admin';
-            setIsAdminMode(true);
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-          }}
-        />
-      )}
+      {!isAdminMode && <Footer />}
 
       <PageTransition phase={transitionPhase} />
     </div>

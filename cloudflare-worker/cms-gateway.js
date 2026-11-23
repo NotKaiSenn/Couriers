@@ -182,7 +182,21 @@ export default {
 
     try {
       const payload = await request.json();
-      const { message, siteData, files = [] } = payload;
+      const { action, message, siteData, files = [] } = payload;
+
+      // 仅校验成员通行密钥（用于前台锁屏解锁，不修改 Git 仓库）
+      if (action === 'verify') {
+        return new Response(
+          JSON.stringify({
+            ok: true,
+            author,
+          }),
+          {
+            status: 200,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          }
+        );
+      }
 
       if (
         !siteData ||

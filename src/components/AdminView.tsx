@@ -14,6 +14,7 @@ import {
   KeyRound,
   LayoutTemplate,
   Loader2,
+  Lock,
   Play,
   Plus,
   RefreshCw,
@@ -40,6 +41,8 @@ const ALL_ROLE_GROUPS: RoleGroup[] = ['剧本创作', '数据包', '建筑', '�
 
 const STORAGE_GATEWAY_URL = 'couriers_cms_gateway_url';
 const STORAGE_ACCESS_KEY = 'couriers_cms_access_key';
+const STORAGE_VERIFIED_KEY = 'couriers_cms_verified_key';
+const STORAGE_VERIFIED_AUTHOR = 'couriers_cms_verified_author';
 
 export interface PendingFileUpload {
   repoPath: string;
@@ -245,7 +248,225 @@ function reorderList<T>(list: T[], fromIdx: number, toIdx: number): T[] {
   return copy;
 }
 
+interface AdminWorkbenchProps {
+  onExitAdmin: () => void;
+  onLock: () => void;
+  initialGatewayUrl: string;
+  initialAccessKey: string;
+  unlockedAuthor: string;
+}
+
 export const AdminView: React.FC<AdminViewProps> = ({ onExitAdmin }) => {
+  const isLocalDev = Boolean(
+    (import.meta as unknown as { env?: { DEV?: boolean } }).env?.DEV
+  );
+
+  const [gatewayUrl, setGatewayUrl] = useState<string>(
+    () => localStorage.getItem(STORAGE_GATEWAY_URL) || ''
+  );
+  const [accessKey, setAccessKey] = useState<string>(
+    () => localStorage.getItem(STORAGE_ACCESS_KEY) || ''
+  );
+  const [unlockedAuthor, setUnlockedAuthor] = useState<string>(
+    () => localStorage.getItem(STORAGE_VERIFIED_AUTHOR) || ''
+  );
+  const [isUnlocked, setIsUnlocked] = useState<boolean>(() => {
+    const savedKey = (localStorage.getItem(STORAGE_ACCESS_KEY) || '').trim();
+    const verifiedKey = (
+      localStorage.getItem(STORAGE_VERIFIED_KEY) || ''
+    ).trim();
+    const savedGateway = (
+      localStorage.getItem(STORAGE_GATEWAY_URL) || ''
+    ).trim();
+    return Boolean(
+      savedGateway &&
+        savedKey.length >= 16 &&
+        verifiedKey &&
+        savedKey === verifiedKey
+    );
+  });
+  const [verifying, setVerifying] = useState(false);
+  const [authError, setAuthError] = useState('');
+
+  const handleVerifyUnlock = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const cleanGateway = gatewayUrl.trim();
+    const cleanKey = accessKey.trim();
+
+    if (!cleanGateway) {
+      setAuthError('请填写 Cloudflare Worker 网关地址');
+      return;
+    }
+    if (!cleanKey) {
+      setAuthError('请填写成员专属通行密钥');
+      return;
+    }
+
+    setVerifying(true);
+    setAuthError('');
+
+    try {
+      const res = await fetch(cleanGateway, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${cleanKey}`,
+        },
+        body: JSON.stringify({ action: 'verify' }),
+      });
+
+      const data = (await res.json().catch(() => ({}))) as {
+        ok?: boolean;
+        error?: string;
+        author?: string;
+      };
+
+      const isCompatibleExistingWorkerSuccess =
+        res.status === 400 &&
+        typeof data.error === 'string' &&
+        data.error.includes('siteData');
+
+      if ((res.ok && data.ok) || isCompatibleExistingWorkerSuccess) {
+        const author = data.author || '';
+        localStorage.setItem(STORAGE_GATEWAY_URL, cleanGateway);
+        localStorage.setItem(STORAGE_ACCESS_KEY, cleanKey);
+        localStorage.setItem(STORAGE_VERIFIED_KEY, cleanKey);
+        localStorage.setItem(STORAGE_VERIFIED_AUTHOR, author);
+        setUnlockedAuthor(author);
+        setIsUnlocked(true);
+      } else {
+        setAuthError(
+          data.error || `验证失败 (HTTP ${res.status})，请检查网关地址与密钥`
+        );
+      }
+    } catch {
+      setAuthError('无法连接到网关地址，请检查网址是否正确或网络是否通畅');
+    } finally {
+      setVerifying(false);
+    }
+  };
+
+  const handleLock = () => {
+    localStorage.removeItem(STORAGE_VERIFIED_KEY);
+    localStorage.removeItem(STORAGE_VERIFIED_AUTHOR);
+    localStorage.removeItem(STORAGE_ACCESS_KEY);
+    setGatewayUrl(localStorage.getItem(STORAGE_GATEWAY_URL) || '');
+    setAccessKey('');
+    setUnlockedAuthor('');
+    setAuthError('');
+    setIsUnlocked(false);
+  };
+
+  if (!isUnlocked) {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center bg-[#eef0f6] px-4 py-12 text-[#252333]">
+        <div className="w-full max-w-md rounded-2xl border border-[#d5d7e6] bg-white p-7 shadow-lg shadow-[#333144]/8 sm:p-8">
+          <div className="mb-6 flex items-center justify-between">
+            <div className="inline-flex items-center gap-2 rounded-lg bg-[#333144] px-3 py-1.5 text-xs font-bold tracking-wider text-white">
+              <ShieldCheck className="h-4 w-4 text-[#CFCFE5]" />
+              <span>COURIERS CMS</span>
+            </div>
+            <button
+              type="button"
+              onClick={onExitAdmin}
+              className="inline-flex items-center gap-1 text-xs font-semibold text-[#333144]/65 transition hover:text-[#333144]"
+            >
+              <ArrowLeft className="h-3.5 w-3.5" />
+              <span>返回官网</span>
+            </button>
+          </div>
+
+          <h1 className="text-xl font-extrabold tracking-tight text-[#252333]">
+            寄语 Couriers · 后台安全门禁
+          </h1>
+          <p className="mt-1.5 text-xs leading-5 text-[#333144]/65">
+            请输入网关地址和成员专属通行密钥，验证通过后才能进入后台编辑或加载任何管理功能。
+          </p>
+
+          <form onSubmit={handleVerifyUnlock} className="mt-6 space-y-4">
+            <div>
+              <label className="block text-xs font-bold text-[#252333]">
+                Cloudflare Worker 网关地址
+              </label>
+              <input
+                type="url"
+                value={gatewayUrl}
+                onChange={(e) => setGatewayUrl(e.target.value)}
+                placeholder="https://couriers-cms.你的子域名.workers.dev"
+                className="mt-1.5 w-full rounded-lg border border-[#cfd2e3] bg-[#fafbfd] px-3.5 py-2.5 text-sm focus:border-[#333144] focus:bg-white focus:outline-none"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-[#252333]">
+                成员专属通行密钥 (Access Key)
+              </label>
+              <input
+                type="password"
+                value={accessKey}
+                onChange={(e) => setAccessKey(e.target.value)}
+                placeholder="粘贴 couriers-xxx-... 高强度密钥"
+                className="mt-1.5 w-full rounded-lg border border-[#cfd2e3] bg-[#fafbfd] px-3.5 py-2.5 font-mono text-sm focus:border-[#333144] focus:bg-white focus:outline-none"
+              />
+            </div>
+
+            {authError && (
+              <div className="rounded-lg border border-rose-200 bg-rose-50 px-3.5 py-2.5 text-xs font-semibold text-rose-800">
+                {authError}
+              </div>
+            )}
+
+            <button
+              type="submit"
+              disabled={verifying}
+              className="flex w-full items-center justify-center gap-2 rounded-lg bg-[#333144] px-4 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-[#525386] disabled:opacity-60"
+            >
+              {verifying ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <KeyRound className="h-4 w-4" />
+              )}
+              <span>{verifying ? '正在验证密钥...' : '验证密钥并进入后台'}</span>
+            </button>
+          </form>
+
+          {isLocalDev && (
+            <div className="mt-5 border-t border-[#e3e5f0] pt-4 text-center">
+              <button
+                type="button"
+                onClick={() => {
+                  setUnlockedAuthor('本地开发');
+                  setIsUnlocked(true);
+                }}
+                className="text-xs font-semibold text-[#69699F] underline-offset-4 hover:underline"
+              >
+                本地开发模式直接进入（仅 localhost 可用）
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <AdminWorkbench
+      onExitAdmin={onExitAdmin}
+      onLock={handleLock}
+      initialGatewayUrl={gatewayUrl}
+      initialAccessKey={accessKey}
+      unlockedAuthor={unlockedAuthor}
+    />
+  );
+};
+
+const AdminWorkbench: React.FC<AdminWorkbenchProps> = ({
+  onExitAdmin,
+  onLock,
+  initialGatewayUrl,
+  initialAccessKey,
+  unlockedAuthor,
+}) => {
   const initialData = rawSiteData as unknown as SiteData;
 
   const [activeSection, setActiveSection] = useState<
@@ -295,12 +516,8 @@ export const AdminView: React.FC<AdminViewProps> = ({ onExitAdmin }) => {
   >({});
   const lastFetchedMcIdRef = useRef<Record<string, string>>({});
 
-  const [gatewayUrl, setGatewayUrl] = useState<string>(
-    () => localStorage.getItem(STORAGE_GATEWAY_URL) || ''
-  );
-  const [accessKey, setAccessKey] = useState<string>(
-    () => localStorage.getItem(STORAGE_ACCESS_KEY) || ''
-  );
+  const [gatewayUrl, setGatewayUrl] = useState<string>(initialGatewayUrl);
+  const [accessKey, setAccessKey] = useState<string>(initialAccessKey);
   const [commitNote, setCommitNote] = useState('');
   const [publishState, setPublishState] = useState<
     'idle' | 'publishing' | 'success' | 'error'
@@ -834,7 +1051,11 @@ export const AdminView: React.FC<AdminViewProps> = ({ onExitAdmin }) => {
                       : 'bg-[#69699F]/15 text-[#525386]'
                   }`}
                 >
-                  {useLocalSaveMode ? '本地直存模式' : '云端发布模式'}
+                  {useLocalSaveMode
+                    ? '本地直存模式'
+                    : unlockedAuthor
+                    ? `已验证 · ${unlockedAuthor}`
+                    : '云端发布模式'}
                 </span>
                 {isDirty && (
                   <span className="rounded-full bg-amber-100 px-2.5 py-0.5 text-[11px] font-semibold text-amber-800">
@@ -846,6 +1067,16 @@ export const AdminView: React.FC<AdminViewProps> = ({ onExitAdmin }) => {
           </div>
 
           <div className="flex items-center gap-2.5">
+            <button
+              type="button"
+              onClick={onLock}
+              title="清除当前登录状态并返回锁屏门禁"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-[#d5d7e6] bg-white px-3 py-2 text-xs font-semibold text-[#333144] transition hover:border-rose-300 hover:bg-rose-50 hover:text-rose-700"
+            >
+              <Lock className="h-3.5 w-3.5" />
+              <span>锁定退出</span>
+            </button>
+
             <button
               type="button"
               onClick={handleDownloadJson}
