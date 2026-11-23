@@ -1,16 +1,7 @@
 import React from 'react';
+import { PORTFOLIO_PROJECTS, ResponsiveImageMeta } from '../data/mockData';
 
-interface ResponsiveImageMeta {
-  avif: string;
-  avifSm: string;
-  jpg: string;
-  jpgSm: string;
-  width: number;
-  height: number;
-  smWidth: number;
-}
-
-const RESPONSIVE_IMAGES: Record<string, ResponsiveImageMeta> = {
+const BUILTIN_RESPONSIVE_IMAGES: Record<string, ResponsiveImageMeta> = {
   '/images/project-silent.jpg': {
     avif: '/images/project-silent.avif',
     avifSm: '/images/project-silent-sm.avif',
@@ -76,6 +67,16 @@ const RESPONSIVE_IMAGES: Record<string, ResponsiveImageMeta> = {
   },
 };
 
+function resolveImageMeta(src: string): ResponsiveImageMeta | undefined {
+  if (BUILTIN_RESPONSIVE_IMAGES[src]) {
+    return BUILTIN_RESPONSIVE_IMAGES[src];
+  }
+  const projectWithMeta = PORTFOLIO_PROJECTS.find(
+    (p) => p.image === src && p.imageMeta
+  );
+  return projectWithMeta?.imageMeta;
+}
+
 export interface OptimizedImageProps
   extends Omit<React.ImgHTMLAttributes<HTMLImageElement>, 'src'> {
   src: string;
@@ -94,7 +95,7 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
   className,
   ...rest
 }) => {
-  const meta = RESPONSIVE_IMAGES[src];
+  const meta = resolveImageMeta(src);
 
   if (!meta) {
     return (
@@ -112,17 +113,35 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
     );
   }
 
+  const avifSrcSet = meta.avif
+    ? meta.avifSm && meta.smWidth
+      ? `${meta.avifSm} ${meta.smWidth}w, ${meta.avif} ${meta.width}w`
+      : `${meta.avif} ${meta.width}w`
+    : undefined;
+
+  const webpSrcSet = meta.webp
+    ? meta.webpSm && meta.smWidth
+      ? `${meta.webpSm} ${meta.smWidth}w, ${meta.webp} ${meta.width}w`
+      : `${meta.webp} ${meta.width}w`
+    : undefined;
+
+  const fallbackSrcSet =
+    meta.jpgSm && meta.smWidth
+      ? `${meta.jpgSm} ${meta.smWidth}w, ${meta.jpg} ${meta.width}w`
+      : undefined;
+
   return (
     <picture className="contents">
-      <source
-        type="image/avif"
-        srcSet={`${meta.avifSm} ${meta.smWidth}w, ${meta.avif} ${meta.width}w`}
-        sizes={sizes}
-      />
+      {avifSrcSet && (
+        <source type="image/avif" srcSet={avifSrcSet} sizes={sizes} />
+      )}
+      {webpSrcSet && (
+        <source type="image/webp" srcSet={webpSrcSet} sizes={sizes} />
+      )}
       <img
         src={meta.jpg}
-        srcSet={`${meta.jpgSm} ${meta.smWidth}w, ${meta.jpg} ${meta.width}w`}
-        sizes={sizes}
+        srcSet={fallbackSrcSet}
+        sizes={fallbackSrcSet ? sizes : undefined}
         alt={alt}
         width={width ?? meta.width}
         height={height ?? meta.height}

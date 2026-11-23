@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 
 interface MinecraftHeadProps {
   seed: string;
@@ -93,6 +93,26 @@ const PRESET_SKINS: Record<string, SkinPalette> = {
   },
 };
 
+const decodedAvatarCache = new Map<string, HTMLImageElement>();
+
+/**
+ * Preloads and pre-decodes avatar images into memory so switching members shows zero white flash.
+ */
+export function preloadAvatarUrls(urls: string[]): void {
+  if (typeof window === 'undefined') return;
+  for (const rawUrl of urls) {
+    const url = rawUrl?.trim();
+    if (!url || decodedAvatarCache.has(url)) continue;
+    const img = new Image();
+    img.decoding = 'sync';
+    img.src = url;
+    if (typeof img.decode === 'function') {
+      img.decode().catch(() => {});
+    }
+    decodedAvatarCache.set(url, img);
+  }
+}
+
 function getPalette(seed: string): SkinPalette {
   if (PRESET_SKINS[seed]) return PRESET_SKINS[seed];
   const keys = Object.keys(PRESET_SKINS);
@@ -108,30 +128,47 @@ export const MinecraftHead: React.FC<MinecraftHeadProps> = ({
   avatarUrl,
   size = 36,
   className = '',
-  loading = 'lazy',
+  loading = 'eager',
 }) => {
-  const [imgFailed, setImgFailed] = useState(false);
+  const remoteFallbackUrl = seed
+    ? `https://mc-heads.net/avatar/${encodeURIComponent(seed.trim())}/64`
+    : '';
+  const primarySrc = avatarUrl?.trim() || remoteFallbackUrl;
+  const [failedPrimaryFor, setFailedPrimaryFor] = useState<string | null>(null);
+  const [failedFallbackFor, setFailedFallbackFor] = useState<string | null>(null);
 
-  useEffect(() => {
-    setImgFailed(false);
-  }, [avatarUrl]);
+  const useFallback =
+    failedPrimaryFor === primarySrc && Boolean(remoteFallbackUrl);
+  const activeSrc = useFallback ? remoteFallbackUrl : primarySrc;
+  const allFailed =
+    !activeSrc ||
+    (failedPrimaryFor === primarySrc &&
+      (!remoteFallbackUrl ||
+        remoteFallbackUrl === primarySrc ||
+        failedFallbackFor === remoteFallbackUrl));
 
-  if (avatarUrl && !imgFailed) {
+  if (!allFailed) {
     return (
       <div
         className={`relative inline-flex shrink-0 select-none ${className}`}
         style={{ width: size, height: size }}
       >
         <img
-          src={avatarUrl}
+          src={activeSrc}
           alt={seed}
           width={size}
           height={size}
           loading={loading}
-          decoding="async"
-          onError={() => setImgFailed(true)}
+          decoding="sync"
+          onError={() => {
+            if (activeSrc === primarySrc) {
+              setFailedPrimaryFor(primarySrc);
+            } else {
+              setFailedFallbackFor(remoteFallbackUrl);
+            }
+          }}
           style={{ imageRendering: 'pixelated' }}
-          className="h-full w-full rounded-[4px] bg-[#f5f6fb] object-cover ring-2 ring-[#333144]/20"
+          className="h-full w-full rounded-[4px] bg-[#333144]/40 object-cover ring-2 ring-[#333144]/20"
         />
       </div>
     );

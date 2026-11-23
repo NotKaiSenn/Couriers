@@ -1,5 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { ArrowRight, ArrowUpRight } from 'lucide-react';
+import {
+  BuildProject,
+  getTrailerProject,
+  HOME_CONFIG,
+  HomeConfig,
+} from '../data/mockData';
 import { OptimizedImage } from './OptimizedImage';
 import './TrailerScene.css';
 
@@ -10,6 +16,8 @@ const STATIC_FRAMES = 4;
 let tunedThisPageLoad = false;
 
 interface TrailerSceneProps {
+  project?: BuildProject;
+  homeConfig?: HomeConfig;
   onOpenProject?: () => void;
   onPrefetchProjectDetail?: () => void;
 }
@@ -38,9 +46,20 @@ function drawStatic(strip: HTMLCanvasElement) {
 }
 
 export function TrailerScene({
+  project,
+  homeConfig = HOME_CONFIG,
   onOpenProject,
   onPrefetchProjectDetail,
 }: TrailerSceneProps) {
+  const trailerProject = project ?? getTrailerProject();
+  const displayTitle =
+    homeConfig.trailerCustomTitle?.trim() || trailerProject.title;
+  const displaySummary =
+    homeConfig.trailerCustomSummary?.trim() || trailerProject.summary;
+  const videoUrl =
+    homeConfig.trailerVideoUrl?.trim() ||
+    'https://www.bilibili.com/video/BV1M8NQ6GE8M/';
+
   const screenRef = useRef<HTMLAnchorElement>(null);
   const staticRef = useRef<HTMLCanvasElement>(null);
   const [phase, setPhase] = useState<'waiting' | 'tuning' | 'ready'>(
@@ -101,7 +120,7 @@ export function TrailerScene({
   return (
     <section
       className="bg-[#F5F6FB] py-14 sm:py-20 lg:py-24"
-      aria-label="《沉默乐章：错位音》预告片"
+      aria-label={`《${displayTitle}》预告片`}
     >
       <div className="mx-auto grid max-w-5xl grid-cols-1 items-center gap-10 px-6 lg:grid-cols-[minmax(0,36rem)_minmax(0,20rem)] lg:justify-center lg:gap-12 lg:pl-10">
         <div className="postal-tv mx-auto lg:mx-0">
@@ -109,10 +128,10 @@ export function TrailerScene({
             <a
               ref={screenRef}
               data-phase={phase}
-              href="https://www.bilibili.com/video/BV1M8NQ6GE8M/"
+              href={videoUrl}
               target="_blank"
               rel="noopener noreferrer"
-              aria-label="在哔哩哔哩观看《沉默乐章：错位音》"
+              aria-label={`在哔哩哔哩观看《${displayTitle}》`}
               className="postal-tv-screen block overflow-hidden bg-[#201e2c] focus-visible:outline-4 focus-visible:-outline-offset-4 focus-visible:outline-white"
               onFocus={showTrailer}
             >
@@ -127,7 +146,7 @@ export function TrailerScene({
               )}
               <span className="trailer-picture absolute inset-0" onAnimationEnd={showTrailer}>
                 <OptimizedImage
-                  src="/images/project-silent.jpg"
+                  src={trailerProject.image}
                   alt=""
                   width={1280}
                   height={720}
@@ -161,15 +180,15 @@ export function TrailerScene({
 
         <div className="mx-auto w-full max-w-xl text-center lg:mx-0 lg:max-w-none lg:pt-8 lg:text-left">
           <h2 className="text-3xl font-black tracking-tight text-[#333144] sm:text-4xl">
-            沉默乐章：错位音
+            {displayTitle}
           </h2>
           <p className="mt-4 text-pretty text-sm leading-7 text-[#333144]/75 sm:text-base sm:leading-8">
-            一座停摆在午夜十二点的赤红剧场，失落乐章的碎片散落在错位的回忆与黑胶唱片之中。
+            {displaySummary}
           </p>
 
           <div className="mt-7 flex flex-wrap justify-center gap-3 lg:justify-start">
             <a
-              href="https://www.bilibili.com/video/BV1M8NQ6GE8M/"
+              href={videoUrl}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-1.5 rounded-md border-2 border-[#333144] bg-[#333144] px-5 py-2.5 text-sm font-bold tracking-wide text-white shadow-md shadow-[#333144]/12 transition hover:border-[#69699F] hover:bg-[#69699F]"

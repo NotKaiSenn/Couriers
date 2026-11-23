@@ -1055,42 +1055,54 @@ export const Mojavatar3D: React.FC<Mojavatar3DProps> = ({
   useEffect(() => {
     const refs = sceneRefs.current;
     const rigGroup = refs.rigGroup;
-    refs.desiredSkinUrl = skinUrl;
+    const effectiveUrl =
+      skinUrl?.trim() ||
+      `https://mc-heads.net/skin/${encodeURIComponent(mcId.trim() || 'MHF_Steve')}`;
+    const fallbackRemoteUrl = `https://mc-heads.net/skin/${encodeURIComponent(
+      mcId.trim() || 'MHF_Steve'
+    )}`;
+    refs.desiredSkinUrl = effectiveUrl;
     if (!rigGroup || webglFailed) return;
 
-    const cached = refs.rigCache.get(skinUrl);
+    const cached = refs.rigCache.get(effectiveUrl);
     if (cached) {
-      if (refs.activeSkinUrl !== skinUrl) {
-        activateRig(skinUrl, cached);
+      if (refs.activeSkinUrl !== effectiveUrl) {
+        activateRig(effectiveUrl, cached);
       }
       return;
     }
 
     let cancelled = false;
-    refs.buildingUrls.add(skinUrl);
-    loadNormalizedSkin(skinUrl)
+    refs.buildingUrls.add(effectiveUrl);
+    loadNormalizedSkin(effectiveUrl)
+      .catch(() => {
+        if (effectiveUrl !== fallbackRemoteUrl) {
+          return loadNormalizedSkin(fallbackRemoteUrl);
+        }
+        throw new Error('Failed to load skin');
+      })
       .then((skin) => {
-        refs.buildingUrls.delete(skinUrl);
+        refs.buildingUrls.delete(effectiveUrl);
         if (cancelled || !refs.rigGroup) return;
-        let rig = refs.rigCache.get(skinUrl);
+        let rig = refs.rigCache.get(effectiveUrl);
         if (!rig) {
           rig = buildCharacterRig(skin);
           rig.group.visible = false;
           refs.rigGroup.add(rig.group);
-          refs.rigCache.set(skinUrl, rig);
+          refs.rigCache.set(effectiveUrl, rig);
         }
-        if (refs.desiredSkinUrl === skinUrl) {
-          activateRig(skinUrl, rig);
+        if (refs.desiredSkinUrl === effectiveUrl) {
+          activateRig(effectiveUrl, rig);
         }
       })
       .catch(() => {
-        refs.buildingUrls.delete(skinUrl);
+        refs.buildingUrls.delete(effectiveUrl);
       });
 
     return () => {
       cancelled = true;
     };
-  }, [skinUrl, webglFailed]);
+  }, [skinUrl, mcId, webglFailed]);
 
   // Background staggered preload of all member skins & 3D voxel rigs during idle time
   useEffect(() => {

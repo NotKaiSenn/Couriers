@@ -13,11 +13,14 @@ const loadJoinView = () =>
   import('./components/JoinView').then((m) => ({ default: m.JoinView }));
 const loadProjectDetailPage = () =>
   import('./components/ProjectDetailPage').then((m) => ({ default: m.ProjectDetailPage }));
+const loadAdminView = () =>
+  import('./components/AdminView').then((m) => ({ default: m.AdminView }));
 
 const PortfolioBentoView = lazy(loadPortfolioView);
 const MembersView = lazy(loadMembersView);
 const JoinView = lazy(loadJoinView);
 const ProjectDetailPage = lazy(loadProjectDetailPage);
+const AdminView = lazy(loadAdminView);
 
 function prefetchTab(tab: NavTab) {
   if (tab === 'portfolio') void loadPortfolioView();
@@ -26,6 +29,14 @@ function prefetchTab(tab: NavTab) {
 }
 
 export default function App() {
+  const [isAdminMode, setIsAdminMode] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return false;
+    return (
+      window.location.hash === '#admin' ||
+      window.location.pathname.endsWith('/admin') ||
+      new URLSearchParams(window.location.search).has('admin')
+    );
+  });
   const [activeTab, setActiveTab] = useState<NavTab>('home');
   const [activeProject, setActiveProject] = useState<BuildProject | null>(null);
   const [returnTab, setReturnTab] = useState<NavTab>('portfolio');
@@ -35,7 +46,15 @@ export default function App() {
   const timersRef = useRef<number[]>([]);
 
   useEffect(() => {
+    const syncHash = () => {
+      setIsAdminMode(
+        window.location.hash === '#admin' ||
+          window.location.pathname.endsWith('/admin')
+      );
+    };
+    window.addEventListener('hashchange', syncHash);
     return () => {
+      window.removeEventListener('hashchange', syncHash);
       timersRef.current.forEach((id) => window.clearTimeout(id));
     };
   }, []);
@@ -85,6 +104,18 @@ export default function App() {
   };
 
   const handleOpenProject = (project: BuildProject, fromTab?: NavTab) => {
+    const customUrl = project.customPageUrl?.trim();
+    if (project.pageMode === 'custom_url' && customUrl) {
+      if (/^https?:\/\//i.test(customUrl)) {
+        window.open(customUrl, '_blank', 'noopener,noreferrer');
+      } else if (customUrl.startsWith('#')) {
+        window.location.hash = customUrl;
+      } else {
+        window.location.assign(customUrl);
+      }
+      return;
+    }
+
     if (!activeProject) {
       returnScrollYRef.current = window.scrollY;
     }
@@ -109,15 +140,30 @@ export default function App() {
 
   return (
     <div className="flex min-h-screen flex-col">
-      <TopNav
-        activeTab={activeProject ? 'portfolio' : activeTab}
-        onSelectTab={handleSelectTab}
-        onPrefetchTab={prefetchTab}
-      />
+      {!isAdminMode && (
+        <TopNav
+          activeTab={activeProject ? 'portfolio' : activeTab}
+          onSelectTab={handleSelectTab}
+          onPrefetchTab={prefetchTab}
+        />
+      )}
 
       <main className="flex-1">
         <Suspense fallback={<div className="min-h-screen bg-[#f5f6fb]" />}>
-          {activeProject ? (
+          {isAdminMode ? (
+            <AdminView
+              onExitAdmin={() => {
+                if (window.location.hash === '#admin') {
+                  history.pushState(
+                    '',
+                    document.title,
+                    window.location.pathname + window.location.search
+                  );
+                }
+                setIsAdminMode(false);
+              }}
+            />
+          ) : activeProject ? (
             <ProjectDetailPage
               project={activeProject}
               onBack={handleBackFromProject}
@@ -147,7 +193,15 @@ export default function App() {
         </Suspense>
       </main>
 
-      <Footer />
+      {!isAdminMode && (
+        <Footer
+          onOpenAdmin={() => {
+            window.location.hash = 'admin';
+            setIsAdminMode(true);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }}
+        />
+      )}
 
       <PageTransition phase={transitionPhase} />
     </div>

@@ -11,21 +11,18 @@ interface PortfolioBentoViewProps {
   onGoMembers: () => void;
 }
 
-const CATEGORIES = [
-  '全部',
-  '叙事解谜',
-  '奇幻冒险',
-  '治愈探索',
-  '剧情探索',
-  '机关解谜',
-  '箱庭体验',
-];
-
 export const PortfolioBentoView: React.FC<PortfolioBentoViewProps> = ({
   onOpenProject,
   onGoMembers,
 }) => {
   const [selected, setSelected] = useState('全部');
+
+  const categories = [
+    '全部',
+    ...Array.from(
+      new Set(PORTFOLIO_PROJECTS.map((p) => p.category).filter(Boolean))
+    ),
+  ];
 
   const projects =
     selected === '全部'
@@ -33,6 +30,7 @@ export const PortfolioBentoView: React.FC<PortfolioBentoViewProps> = ({
       : PORTFOLIO_PROJECTS.filter((p) => p.category === selected);
 
   const isBentoAll = selected === '全部' && projects.length >= 5;
+  const isSingleCard = projects.length === 1;
 
   return (
     <div className="min-h-screen bg-[#f5f6fb] pb-24 pt-24">
@@ -65,34 +63,40 @@ export const PortfolioBentoView: React.FC<PortfolioBentoViewProps> = ({
         </div>
 
         {/* Category Filters */}
-        <div className="mb-6 flex flex-wrap gap-2">
-          {CATEGORIES.map((cat) => {
-            const active = selected === cat;
-            return (
-              <button
-                key={cat}
-                type="button"
-                onClick={() => setSelected(cat)}
-                className={`rounded-md px-4 py-1.5 text-xs font-semibold tracking-wide transition ${
-                  active
-                    ? 'border-2 border-[#333144] bg-[#333144] text-white'
-                    : 'border-2 border-[#CFCFE5] bg-white text-[#333144]/75 hover:border-[#333144] hover:text-[#333144]'
-                }`}
-              >
-                {cat}
-              </button>
-            );
-          })}
-        </div>
+        {categories.length > 2 && (
+          <div className="mb-6 flex flex-wrap gap-2">
+            {categories.map((cat) => {
+              const active = selected === cat;
+              return (
+                <button
+                  key={cat}
+                  type="button"
+                  onClick={() => setSelected(cat)}
+                  className={`rounded-md px-4 py-1.5 text-xs font-semibold tracking-wide transition ${
+                    active
+                      ? 'border-2 border-[#333144] bg-[#333144] text-white'
+                      : 'border-2 border-[#CFCFE5] bg-white text-[#333144]/75 hover:border-[#333144] hover:text-[#333144]'
+                  }`}
+                >
+                  {cat}
+                </button>
+              );
+            })}
+          </div>
+        )}
 
         {/* Asymmetric 2-Column Bento Grid */}
         <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
           {projects.map((project, index) => {
             const lead = getMemberById(project.leadBuilderId);
             const isTallHero = isBentoAll && index === 0;
-            const isSilentArtwork = project.id === 'silent-movement';
+            const isSilentArtwork =
+              project.imageFit === 'contain' || project.id === 'silent-movement';
             const isFullWidthLast =
-              isBentoAll && index === projects.length - 1 && projects.length % 2 === 0;
+              isSingleCard ||
+              (isBentoAll &&
+                index === projects.length - 1 &&
+                projects.length % 2 === 0);
 
             return (
               <article
@@ -101,7 +105,9 @@ export const PortfolioBentoView: React.FC<PortfolioBentoViewProps> = ({
                 className={`bento-tile group cursor-pointer ${
                   isSilentArtwork ? 'bg-black' : 'bg-[#333144]'
                 } ${
-                  isTallHero
+                  isSingleCard
+                    ? 'min-h-[380px] md:col-span-2 md:min-h-[460px]'
+                    : isTallHero
                     ? 'min-h-[340px] md:row-span-2 md:min-h-[520px]'
                     : isFullWidthLast
                     ? 'min-h-[250px] md:col-span-2 md:min-h-[280px]'

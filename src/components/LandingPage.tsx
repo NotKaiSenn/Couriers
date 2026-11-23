@@ -8,11 +8,12 @@ import {
 } from 'lucide-react';
 import {
   BuildProject,
-  PORTFOLIO_PROJECTS,
+  getFeaturedProjects,
+  getTrailerProject,
   TEAM_MEMBERS,
 } from '../data/mockData';
 import { useReveal } from '../hooks/useReveal';
-import { MinecraftHead } from './MinecraftHead';
+import { MinecraftHead, preloadAvatarUrls } from './MinecraftHead';
 import { OptimizedImage } from './OptimizedImage';
 import { PixelDivider } from './PixelDivider';
 import { PostalHero } from './PostalHero';
@@ -25,6 +26,8 @@ const Mojavatar3D = lazy(loadMojavatar3D);
 let mojavatarLoadedOnce = false;
 
 const ALL_MEMBER_SKIN_URLS = TEAM_MEMBERS.map((m) => m.skinUrl);
+const ALL_MEMBER_AVATAR_URLS = TEAM_MEMBERS.map((m) => m.avatarUrl);
+preloadAvatarUrls(ALL_MEMBER_AVATAR_URLS);
 
 interface LandingPageProps {
   onOpenProject: (project: BuildProject) => void;
@@ -55,6 +58,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({
   const [shouldLoad3D, setShouldLoad3D] = useState(mojavatarLoadedOnce);
 
   useEffect(() => {
+    preloadAvatarUrls(ALL_MEMBER_AVATAR_URLS);
+  }, []);
+
+  useEffect(() => {
     if (shouldLoad3D) return;
     const el = portraitRef.current;
     if (!el) return;
@@ -77,9 +84,11 @@ export const LandingPage: React.FC<LandingPageProps> = ({
     return () => observer.disconnect();
   }, [shouldLoad3D]);
 
+  const featuredProjects = getFeaturedProjects();
+  const trailerProject = getTrailerProject();
   const trackRef = useRef<HTMLDivElement | null>(null);
   const [slidePage, setSlidePage] = useState(0);
-  const totalPages = Math.max(1, Math.ceil(PORTFOLIO_PROJECTS.length / 3));
+  const totalPages = Math.max(1, Math.ceil(featuredProjects.length / 3));
 
   const goSlide = (dir: 'prev' | 'next') => {
     const next =
@@ -135,7 +144,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
   return (
     <div className="postal-home w-full">
       <PostalHero
-        onOpenTrailerProject={() => onOpenProject(PORTFOLIO_PROJECTS[0])}
+        onOpenTrailerProject={() => onOpenProject(trailerProject)}
         onPrefetchProjectDetail={onPrefetchProjectDetail}
       />
 
@@ -151,33 +160,35 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               作品
             </h2>
 
-            <div className="flex items-center gap-3">
-              <button
-                type="button"
-                onClick={() => goSlide('prev')}
-                disabled={slidePage === 0}
-                aria-label="上一组作品"
-                className="flex h-11 w-11 items-center justify-center rounded-md border-2 border-[#CFCFE5]/60 bg-transparent text-white transition hover:border-white hover:bg-white/10 disabled:opacity-30 sm:h-12 sm:w-12"
-              >
-                <ArrowLeft className="h-5 w-5" strokeWidth={2.5} />
-              </button>
-              <button
-                type="button"
-                onClick={() => goSlide('next')}
-                disabled={slidePage === totalPages - 1}
-                aria-label="下一组作品"
-                className="flex h-11 w-11 items-center justify-center rounded-md border-2 border-[#CFCFE5]/60 bg-transparent text-white transition hover:border-white hover:bg-white/10 disabled:opacity-30 sm:h-12 sm:w-12"
-              >
-                <ArrowRight className="h-5 w-5" strokeWidth={2.5} />
-              </button>
-            </div>
+            {totalPages > 1 && (
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => goSlide('prev')}
+                  disabled={slidePage === 0}
+                  aria-label="上一组作品"
+                  className="flex h-11 w-11 items-center justify-center rounded-md border-2 border-[#CFCFE5]/60 bg-transparent text-white transition hover:border-white hover:bg-white/10 disabled:opacity-30 sm:h-12 sm:w-12"
+                >
+                  <ArrowLeft className="h-5 w-5" strokeWidth={2.5} />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => goSlide('next')}
+                  disabled={slidePage === totalPages - 1}
+                  aria-label="下一组作品"
+                  className="flex h-11 w-11 items-center justify-center rounded-md border-2 border-[#CFCFE5]/60 bg-transparent text-white transition hover:border-white hover:bg-white/10 disabled:opacity-30 sm:h-12 sm:w-12"
+                >
+                  <ArrowRight className="h-5 w-5" strokeWidth={2.5} />
+                </button>
+              </div>
+            )}
           </div>
 
           <div
             ref={trackRef}
             className="no-scrollbar flex snap-x snap-mandatory gap-6 overflow-x-auto pb-2"
           >
-            {PORTFOLIO_PROJECTS.map((project) => (
+            {featuredProjects.map((project) => (
               <article
                 key={project.id}
                 onClick={() => onOpenProject(project)}
@@ -198,9 +209,11 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                   <h3 className="text-base font-bold text-white transition-colors group-hover:text-[#8F99D2]">
                     {project.title}
                   </h3>
-                  <span className="text-xs text-[#CFCFE5]/70">
-                    {project.category}
-                  </span>
+                  {project.category && (
+                    <span className="text-xs text-[#CFCFE5]/70">
+                      {project.category}
+                    </span>
+                  )}
                 </div>
               </article>
             ))}
