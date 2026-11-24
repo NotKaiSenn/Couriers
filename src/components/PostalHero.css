@@ -134,7 +134,7 @@
 }
 
 .postal-fallback {
-  background: url('/images/post-office/district.webp') center top 36svh / min(80vw, 76svh) auto no-repeat;
+  background: url('/images/post-office/district_new.png') center top 36svh / min(80vw, 76svh) auto no-repeat;
 }
 .postal-fallback img {
   position: absolute;

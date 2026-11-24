@@ -5,7 +5,7 @@ const artFiles = {
   sageBalloon: '/images/post-office/sage-balloon.png',
   sky: '/images/post-office/sky.webp',
   cloud: '/images/post-office/cloud.webp',
-  district: '/images/post-office/district.webp',
+  district: '/images/post-office/district_new.png',
   steam: '/images/post-office/steam.webp',
   title: '/images/post-office/masthead-outlined.svg',
 } as const;
