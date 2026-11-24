@@ -1,6 +1,6 @@
 {
   "categories": [
-    "小游戏"
+    "叙事解谜"
   ],
   "homeConfig": {
     "trailerProjectId": "silent-movement",
@@ -8,6 +8,7 @@
     "trailerCustomTitle": "",
     "trailerCustomSummary": "",
     "featuredProjectIds": [
+      "project-8372",
       "silent-movement"
     ]
   },
@@ -110,9 +111,33 @@
   ],
   "projects": [
     {
+      "id": "slient",
+      "title": "沉默乐章·错位音",
+      "category": "叙事解谜",
+      "date": "2026-11",
+      "playTime": "4-6 小时",
+      "players": "6 人",
+      "version": "Java 26.1.2",
+      "buildersCount": 7,
+      "image": "/images/project-silent.jpg",
+      "imageFit": "contain",
+      "downloadUrl": "https://pan.quark.cn/s/b828faeb6d7a",
+      "downloadLabel": "夸克网盘",
+      "videoUrl": "",
+      "pageMode": "standard",
+      "customPageUrl": "",
+      "summary": "欢迎来到寄语大学一年一度的校园艺术节！",
+      "story": [
+        "地图为本格推理，6人本，难度较高",
+        "推荐大家至少预留5小时游玩本作",
+        "如果是轻度玩家，我们十分推荐在二搜结束后休息休息再推理，会有更好的游戏体验~"
+      ],
+      "leadBuilderId": "rainswallow"
+    },
+    {
       "id": "the-chasers",
       "title": "追击时刻",
-      "category": "小游戏",
+      "category": "",
       "date": "2026-11",
       "playTime": "约 20 分钟",
       "players": "2-15 人",
