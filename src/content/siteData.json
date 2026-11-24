@@ -1,5 +1,7 @@
 {
-  "categories": [],
+  "categories": [
+    "小游戏"
+  ],
   "homeConfig": {
     "trailerProjectId": "silent-movement",
     "trailerVideoUrl": "https://www.bilibili.com/video/BV1M8NQ6GE8M/",
@@ -108,28 +110,39 @@
   ],
   "projects": [
     {
-      "id": "silent-movement",
-      "title": "沉默乐章：错位音",
-      "category": "",
+      "id": "the-chasers",
+      "title": "追击时刻",
+      "category": "小游戏",
       "date": "2026-11",
-      "playTime": "约 90 分钟",
-      "players": "1–2 人",
-      "version": "Java 1.21.4",
-      "buildersCount": 9,
-      "image": "/images/project-silent.jpg",
-      "imageFit": "contain",
-      "downloadUrl": "",
-      "downloadLabel": "下载地图",
-      "videoUrl": "https://www.bilibili.com/video/BV1M8NQ6GE8M/",
+      "playTime": "约 20 分钟",
+      "players": "2-15 人",
+      "version": "Java 1.21.3",
+      "buildersCount": 3,
+      "image": "/images/projects/silent-movement.png",
+      "imageFit": "cover",
+      "downloadUrl": "https://pan.quark.cn/s/7e449ebac57b",
+      "downloadLabel": "夸克网盘",
+      "videoUrl": "https://www.bilibili.com/video/BV1FbrrY8E2E/",
       "pageMode": "standard",
       "customPageUrl": "",
-      "summary": "一座停摆在午夜十二点的赤红剧场，失落乐章的碎片散落在错位的回忆与黑胶唱片之中。",
+      "summary": "欢乐向小游戏地图，核心玩法为衔尾蛇式追击，死亡后会成为小弟，帮助大哥一起获得胜利！",
       "story": [
-        "《沉默乐章：错位音》是寄语 Couriers 推出的叙事解谜体验地图。玩家将踏入一座被红幕与旧时钟封存的剧场，通过搜集散落各处的错位唱片、拼合角色留下的零星记忆，让静止的时钟重新走动。",
-        "地图结合原版资源包音频与数据包演出机制：每插入一张不同色标的黑胶唱片，剧场的空间结构、灯光色调与隐藏通道都会随之发生微妙变化。",
-        "我们希望用音乐盒般的节拍感与细腻的室内交互，让解谜不再只是机械开关，而是一次与角色跨时空对话的阅读体验。"
+        "欢乐向小游戏地图，核心玩法为衔尾蛇式追击，所有玩家随机连成环（即1追击2,2追击3,3追击1），死亡后会成为小弟，帮助大哥一起获得胜利！（当然，你也可以通过道具重新复活，或许这就是命？）",
+        "地图内含40+道具，包含区域封锁，随机事件，NPC任务等，信任与背叛相伴，与你欢乐过大年~",
+        "内有各类特殊彩蛋，等你来发现。",
+        "「8人以上地图游玩设置推荐:",
+        "追击模式/5s刷新地面道具袋/对话npc一次获得道具袋/特殊颁奖2分/游戏时间可自选」"
       ],
-      "leadBuilderId": "rainswallow"
+      "leadBuilderId": "dawn_dust",
+      "imageMeta": {
+        "jpg": "/images/projects/silent-movement.png",
+        "width": 2130,
+        "height": 874,
+        "webp": "/images/projects/silent-movement.webp",
+        "smWidth": 736,
+        "jpgSm": "/images/projects/silent-movement-sm.jpg",
+        "webpSm": "/images/projects/silent-movement-sm.webp"
+      }
     }
   ]
 }
