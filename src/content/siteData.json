@@ -145,7 +145,7 @@
       "version": "Java 1.21.3",
       "buildersCount": 3,
       "image": "/images/projects/silent-movement.png",
-      "imageFit": "contain",
+      "imageFit": "cover",
       "downloadUrl": "https://pan.quark.cn/s/7e449ebac57b",
       "downloadLabel": "夸克网盘",
       "videoUrl": "https://www.bilibili.com/video/BV1FbrrY8E2E/",
