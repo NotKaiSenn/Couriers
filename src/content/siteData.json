@@ -1,6 +1,7 @@
 {
   "categories": [
-    "叙事解谜"
+    "叙事解谜",
+    "小游戏"
   ],
   "homeConfig": {
     "trailerProjectId": "silent-movement",
@@ -137,14 +138,14 @@
     {
       "id": "the-chasers",
       "title": "追击时刻",
-      "category": "",
+      "category": "小游戏",
       "date": "2026-11",
       "playTime": "约 20 分钟",
       "players": "2-15 人",
       "version": "Java 1.21.3",
       "buildersCount": 3,
       "image": "/images/projects/silent-movement.png",
-      "imageFit": "cover",
+      "imageFit": "contain",
       "downloadUrl": "https://pan.quark.cn/s/7e449ebac57b",
       "downloadLabel": "夸克网盘",
       "videoUrl": "https://www.bilibili.com/video/BV1FbrrY8E2E/",
